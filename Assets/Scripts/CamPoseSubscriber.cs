@@ -16,6 +16,8 @@ public class CamPoseSubscriber: MonoBehaviour{
 
     public GameObject Cylinder;
     public GameObject Cube;
+    public GameObject Cube1;
+    public GameObject Cube2;
     public Camera POV = new Camera();
     ROSConnection ros;
     public string topicName = "pov_pose";
@@ -32,12 +34,36 @@ public class CamPoseSubscriber: MonoBehaviour{
         // ros.RegisterPublisher<ImageMsg>(camTopicName);
         // POV.orthographic = true;
 
-        Vector3 c_trans = new Vector3(0.027f,0.65f,0.384f);
+        // Vector3 c_trans = new Vector3(0.0f,0.65f,0.384f);
+        Vector3 c_trans = new Vector3(0.0f,0.40f,0.384f);
         Quaternion c_quat = Quaternion.Euler(0,0,0);
         Cylinder.transform.SetPositionAndRotation(c_trans,c_quat);
-        Vector3 cube_trans = new Vector3(0.027f ,0.65f +0.15f,0.384f);
+
+
+
+        // Vector3 cube_trans = new Vector3(0.0f ,0.65f +0.15f,0.384f);
+        Vector3 cube_trans = new Vector3(0.0f ,0.4f,0.0f);
         Quaternion cube_quat = Quaternion.Euler(0,0,0);
         Cube.transform.SetPositionAndRotation(cube_trans,cube_quat);
+        Collider Cube_Collider = Cube.GetComponent<Collider>();
+        Cube_Collider.enabled = !Cube_Collider.enabled;
+
+
+        // Vector3 cube1_trans = new Vector3(0.2f ,0.65f +0.15f,0.384f);
+        // Vector3 cube1_trans = new Vector3(-0.4f , 0.40f,0.5f);
+        // Quaternion cube1_quat = Quaternion.Euler(0,0,0);
+        // Cube1.transform.SetPositionAndRotation(cube1_trans,cube1_quat);
+        // Collider Cube1_Collider = Cube1.GetComponent<Collider>();
+        // Cube1_Collider.enabled = !Cube1_Collider.enabled;
+
+        // Vector3 cube2_trans = new Vector3(-0.2f ,0.65f +0.15f,0.384f);
+        // Vector3 cube2_trans = new Vector3(-0.2f , 0.40f,0.5f);
+        // Quaternion cube2_quat = Quaternion.Euler(0,0,0);
+        // Cube2.transform.SetPositionAndRotation(cube2_trans,cube2_quat);
+        // Collider Cube2_Collider = Cube2.GetComponent<Collider>();
+        // Cube2_Collider.enabled = !Cube2_Collider.enabled;
+
+
         // POV.transform.SetParent(Cube.transform);
         // cam  = Instantiate(POV);
         POV.enabled = true;
@@ -85,10 +111,11 @@ public class CamPoseSubscriber: MonoBehaviour{
         // Vector3 trans = new Vector3(0,1,1);
         // Vector3 trans = new Vector3(trans_x+0.1f,trans_y+0.1f,trans_z+0.1f);
 
-        Vector3 trans = new Vector3(trans_x,trans_y + 1.0f,trans_z);
+        Vector3 trans = new Vector3(trans_x,trans_y + 0.40f,trans_z + .1f);
+        // Vector3 trans = new Vector3(trans_x,trans_y ,trans_z );
         Vector3 trans1 = new Vector3(trans_x,trans_y,trans_z);
-        Vector3 cube_trans = new Vector3(0.027f ,0.65f +0.15f,0.384f);
-        Vector3 relative_pose = cube_trans - trans;
+        Vector3 cube_trans = new Vector3(0.0f ,0.8f,0.384f);
+        Vector3 relative_pose = (cube_trans - trans) * 0.5f;
 
 
         
@@ -120,9 +147,10 @@ public class CamPoseSubscriber: MonoBehaviour{
         // POV.transform.SetPositionAndRotation(trans,rotation);
         // POV.transform.SetPositionAndRotation(new_pose,quat);
 
+        // Vector3 lookat_axis = new Vector3(0,1,0);
         Vector3 lookat_axis = new Vector3(0,1,0);
         // Vector3 lookat_axis = new Vector3(0.5f,0.5f,0.5f);
-        POV.transform.LookAt(Cube.transform,lookat_axis);
+        POV.transform.LookAt(Cube.transform,lookat_axis); 
         // POV.transform.LookAt(Cube.transform, Vector3.up);
         // POV.transform.LookAt(Cylinder.transform);
         // POV.transform.position(0,1,0);

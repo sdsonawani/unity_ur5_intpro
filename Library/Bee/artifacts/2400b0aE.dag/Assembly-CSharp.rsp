@@ -379,8 +379,10 @@
 "Assets/RosMessages/Ur5Intpro/msg/Ur5JointsMsg.cs"
 "Assets/Scripts/CamPoseSubscriber.cs"
 "Assets/Scripts/Controller.cs"
+"Assets/Scripts/HumanFocus.cs"
 "Assets/Scripts/ImagePublisher.cs"
 "Assets/Scripts/ObjectPosePublisher.cs"
+"Assets/Scripts/ProjectionMapping.cs"
 "Assets/Scripts/PublishUr5Joints.cs"
 "Assets/Scripts/SubscribeUr5Joints.cs"
 -langversion:9.0
