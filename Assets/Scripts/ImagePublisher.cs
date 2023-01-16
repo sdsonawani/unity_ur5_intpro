@@ -15,42 +15,99 @@ using System.IO;
 public class ImagePublisher: MonoBehaviour{
 
     public Camera _camera; 
+    public Camera _2d_pov; 
 
     ROSConnection ros;
     public ImageMsg imgmsg = new ImageMsg();
-    public string CameraTopic = "pov_image";
+    public string CameraTopic1 = "pov_image";
+    public string CameraTopic2 = "pov_plane";
     public HeaderMsg msg_ = new HeaderMsg();
 
     public float publishMessageFrequency = 0.01f;
     private float timeElapsed;
     public RenderTexture renderTexture;
-
+    public float f = 35.0f;
     public void Start(){
 
+        _camera = GameObject.Find("POV").GetComponent<Camera>();
+        _2d_pov = GameObject.Find("New_POV").GetComponent<Camera>();
+        changeCameraParam(_camera);
+        changeCameraParam(_2d_pov);
+        
         // Initialize ROS connection 
         ros =  ROSConnection.GetOrCreateInstance();
-        ros.RegisterPublisher<ImageMsg>(CameraTopic);
-        _camera.enabled = true;
-
+        ros.RegisterPublisher<ImageMsg>(CameraTopic1);
+        ros.RegisterPublisher<ImageMsg>(CameraTopic2);
+        // _camera.pixelWidth = 1920;
+        // _camera.pixelHeight= 1080;
         // Render Texture Initialized
-        renderTexture = new RenderTexture(_camera.pixelWidth, _camera.pixelHeight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB);
+        // renderTexture = new RenderTexture(_camera.pixelWidth, _camera.pixelHeight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB);
+        renderTexture = new RenderTexture(800, 600, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB);
         renderTexture.Create();
         _camera.clearFlags = CameraClearFlags.SolidColor;
     }
 
-    public ImageMsg CaptureImage(){
-        _camera.backgroundColor = Color.black;
-        _camera.targetTexture = renderTexture;
+
+    public void changeCameraParam(Camera c_camera)
+    {
+        // height: 600
+        // width: 800
+        // distortion_model: "plumb_bob"
+        // D: [1e-08, 1e-08, 1e-08, 1e-08, 1e-08]
+        // K: [565.9971898668298, 0.0, 400.5, 0.0, 565.9971898668298, 300.5, 0.0, 0.0, 1.0]
+        // R: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+        // P: [565.9971898668298, 0.0, 400.5, -0.0, 0.0, 565.9971898668298, 300.5, 0.0, 0.0, 0.0, 1.0, 0.0]
+        // binning_x: 0
+        // binning_y: 0
+        // roi: 
+        // x_offset: 0
+        // y_offset: 0
+        // height: 0
+        // width: 0
+        // do_rectify: False
+        float ax, ay, sizeX, sizeY;
+        float x0, y0, shiftX, shiftY;
+        int width, height;
+ 
+ 
+        ax = 565.9971898668298f;
+        ay = 565.9971898668298f;
+        x0 = 400.5f;
+        y0 = 300.5f;
+ 
+        width =  800;
+        height = 600;       
+
+        sizeX = f * width / ax;
+        sizeY = f * height / ay;
+ 
+        //PlayerSettings.defaultScreenWidth = width;
+        //PlayerSettings.defaultScreenHeight = height;
+ 
+        shiftX = -(x0 - width / 2.0f) / width;
+        shiftY = (y0 - height / 2.0f) / height;
+ 
+        c_camera.sensorSize = new Vector2(sizeX, sizeY);     // in mm, mx = 1000/x, my = 1000/y
+        c_camera.focalLength = f;                            // in mm, ax = f * mx, ay = f * my
+        c_camera.lensShift = new Vector2(shiftX, shiftY);    // W/2,H/w for (0,0), 1.0 shift in full W/H in image plane
+ 
+    }
+
+    public ImageMsg CaptureImage(Camera cam, string fid){
+        cam.backgroundColor = Color.black;
+        cam.targetTexture = renderTexture;
         RenderTexture currentRT = RenderTexture.active;
         RenderTexture.active = renderTexture;
-        _camera.Render();
-        Texture2D pov_texture = new Texture2D(renderTexture.width, renderTexture.height);
-        pov_texture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+        cam.Render();
+        // Texture2D pov_texture = new Texture2D(renderTexture.width, renderTexture.height);
+        // pov_texture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+        Texture2D pov_texture = new Texture2D(800, 600);
+        pov_texture.ReadPixels(new Rect(0, 0, 800, 600), 0, 0);
         pov_texture.Apply();
         RenderTexture.active = currentRT;
-        _camera.targetTexture = null;
+        cam.targetTexture = null;
         // byte[] imageBytes = pov_texture.GetRawTextureData();
-        msg_.frame_id = "pov_frame";
+        msg_.frame_id = fid;
         ImageMsg imagemsg = pov_texture.ToImageMsg(msg_);
         Destroy(pov_texture);
         return imagemsg;
@@ -69,8 +126,10 @@ public class ImagePublisher: MonoBehaviour{
     public void Update(){        
         timeElapsed += Time.deltaTime;
         if (timeElapsed > publishMessageFrequency){
-            ImageMsg rosmsg =  CaptureImage();
-            ros.Publish(CameraTopic, rosmsg);
+            ImageMsg rosmsg1 =  CaptureImage(_camera, "pov_frame");
+            ImageMsg rosmsg2 =  CaptureImage(_2d_pov, "pov_plane");
+            ros.Publish(CameraTopic1, rosmsg1);
+            ros.Publish(CameraTopic2, rosmsg2);
             timeElapsed = 0;
         }
     }

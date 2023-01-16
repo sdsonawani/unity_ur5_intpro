@@ -13,34 +13,34 @@ namespace RosMessageTypes.Ur5Intpro
         public const string k_RosMessageName = "ur5_intpro/Ur5Joints";
         public override string RosMessageName => k_RosMessageName;
 
-        public double[] ur_joints_unity;
+        public double[] joints;
 
         public Ur5JointsMsg()
         {
-            this.ur_joints_unity = new double[6];
+            this.joints = new double[6];
         }
 
-        public Ur5JointsMsg(double[] ur_joints_unity)
+        public Ur5JointsMsg(double[] joints)
         {
-            this.ur_joints_unity = ur_joints_unity;
+            this.joints = joints;
         }
 
         public static Ur5JointsMsg Deserialize(MessageDeserializer deserializer) => new Ur5JointsMsg(deserializer);
 
         private Ur5JointsMsg(MessageDeserializer deserializer)
         {
-            deserializer.Read(out this.ur_joints_unity, sizeof(double), 6);
+            deserializer.Read(out this.joints, sizeof(double), 6);
         }
 
         public override void SerializeTo(MessageSerializer serializer)
         {
-            serializer.Write(this.ur_joints_unity);
+            serializer.Write(this.joints);
         }
 
         public override string ToString()
         {
             return "Ur5JointsMsg: " +
-            "\nur_joints_unity: " + System.String.Join(", ", ur_joints_unity.ToList());
+            "\njoints: " + System.String.Join(", ", joints.ToList());
         }
 
 #if UNITY_EDITOR

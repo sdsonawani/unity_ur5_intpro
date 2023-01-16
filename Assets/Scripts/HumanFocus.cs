@@ -44,6 +44,11 @@ public class HumanFocus: MonoBehaviour{
     Camera cam;
 
     void Start(){
+        Cube       = GameObject.Find("Cube");
+        FrontCube  = GameObject.Find("front_cube");
+        BackCube   = GameObject.Find("back_cube");
+
+
         ros =  ROSConnection.GetOrCreateInstance();
         ros.Subscribe<CamPoseMsg>(topicName, PoseCallback);
         ros.RegisterPublisher<CamPoseMsg>(cubeTopicName);

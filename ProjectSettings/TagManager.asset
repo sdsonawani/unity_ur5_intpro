@@ -6,6 +6,8 @@ TagManager:
   tags:
   - robot
   - POV_camera
+  - base_plate_1
+  - POV_Plane
   layers:
   - Default
   - TransparentFX
@@ -13,8 +15,8 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
+  - render_layer_1
+  - render_layer_2
   - 
   - 
   - 
@@ -42,4 +44,10 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: render_layer_1
+    uniqueID: 3737302019
+    locked: 0
+  - name: render_layer_2
+    uniqueID: 2488822693
     locked: 0
