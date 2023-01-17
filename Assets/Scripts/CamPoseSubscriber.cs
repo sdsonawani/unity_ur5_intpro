@@ -15,88 +15,97 @@ using System;
 public class CamPoseSubscriber: MonoBehaviour{
 
     public GameObject Table;
-    // public GameObject Cube_1;
+    public GameObject Cube_1;
     public GameObject Cube_2;
     public GameObject Cube_2_base;
     public GameObject Cube_2_basec1;
     public GameObject Cube_2_basec2;
     public GameObject Cube_2_basec3;
+    public GameObject Cube_2_basec4;
     // public GameObject Cube_3;
     public Camera POV = new Camera();
     public Camera New_POV = new Camera();
+    public Camera New_POV_1 = new Camera();
     ROSConnection ros;
     public string topicName = "pov_pose";
-    public string camTopicName = "pov_image";
     public float trans_x,trans_y,trans_z;
     public float quat_w,quat_x,quat_y,quat_z;
     public float offset  = 0;
     public HeaderMsg msg_ = new HeaderMsg();
     Camera cam;
+    public Shader shade;
 
+    void ApplyMaterial(GameObject obj, Color color){
+        Material mat = obj.GetComponent<Renderer>().material;
+        mat.shader = shade;
+        mat.color = color;
 
+    }
 
     void Start(){
 
-        // Cube_1 = GameObject.Find("Cube_1");
-        Cube_2      = GameObject.Find("Cube_2");
-        Cube_2_base = GameObject.Find("Base_Plate");
+        Cube_1        = GameObject.Find("Cube_1");
+        Cube_2        = GameObject.Find("Cube_2");
+        Cube_2_base   = GameObject.Find("Base_Plate");
         Cube_2_basec1 = GameObject.Find("Base_Plate_c1");
         Cube_2_basec2 = GameObject.Find("Base_Plate_c2");
         Cube_2_basec3 = GameObject.Find("Base_Plate_c3");
-        Material ProjSurfMaterial = Cube_2_base.GetComponent<Renderer>().material;
-        ProjSurfMaterial.color = Color.red;
-
-        Material ProjSurfMateria_c1 = Cube_2_basec1.GetComponent<Renderer>().material;
+        Cube_2_basec4 = GameObject.Find("Base_Plate_c4");
+        
+        shade = Shader.Find("Unlit/Color");
         Color customColor = new Color(0.4f, 0.9f, 0.7f, 1.0f);
-        ProjSurfMateria_c1.color = customColor;
-
-        Material ProjSurfMaterial_c2 = Cube_2_basec2.GetComponent<Renderer>().material;
-        ProjSurfMaterial_c2.color = Color.green;
-
-        Material ProjSurfMaterial_c3 = Cube_2_basec3.GetComponent<Renderer>().material;
-        ProjSurfMaterial_c3.color = Color.blue;
-
-        // Shader shader_  = 
-        // ProjSurfMaterial.SetTexture("_MainTex",testText);
-        // ProjSurfMaterial.SetTexture("_MainTex",ShadowImage);
-        // Cube_3 = GameObject.Find("Cube_3");
-        Table  = GameObject.Find("table_top");
-        POV    = GameObject.Find("POV").GetComponent<Camera>();
-        New_POV = GameObject.Find("New_POV").GetComponent<Camera>();
+        Color new_color   = new Color(1f, 1f, 1f, 1.0f);
+        ApplyMaterial(Cube_2_base   , customColor);
+        ApplyMaterial(Cube_2_basec1 , Color.red);
+        ApplyMaterial(Cube_2_basec2,  Color.green);
+        ApplyMaterial(Cube_2_basec3,  Color.blue);
+        ApplyMaterial(Cube_2_basec4,  new_color);
+        
+    
+        Table     = GameObject.Find("table_top");
+        POV       = GameObject.Find("POV").GetComponent<Camera>();
+        New_POV   = GameObject.Find("New_POV").GetComponent<Camera>();
+        New_POV_1 = GameObject.Find("New_POV_1").GetComponent<Camera>();
 
         ros =  ROSConnection.GetOrCreateInstance();
         ros.Subscribe<CamPoseMsg>(topicName, PoseCallback);
         ros.RegisterPublisher<CamPoseMsg>("pov_rel_pose");
 
-        // Vector3 cube1_trans = new Vector3(0.2f , 0.40f, 0.8f);
-        // Quaternion cube1_quat = Quaternion.Euler(0, 0, 0);
-        // Cube_1.transform.SetPositionAndRotation(cube1_trans,cube1_quat);
-        // Collider Cube_1_Collider = Cube_1.GetComponent<Collider>();
-        // Cube_1_Collider.enabled = !Cube_1_Collider.enabled;
-
-        Vector3 cube2_trans = new Vector3(0.0f , 0.40f,0.6f);
-        Quaternion cube2_quat = Quaternion.Euler(0, 0, 0);
-        Cube_2.transform.SetPositionAndRotation(cube2_trans,cube2_quat);
-
 
         Vector3 cube2_base_trans = new Vector3(0.0f , 0.35f,0.6f);
         Quaternion cube2_base_quat = Quaternion.Euler(0, 0, 0);
         Cube_2_base.transform.SetPositionAndRotation(cube2_base_trans,cube2_base_quat);
-
-
-        // Vector3 cube2_base_c1_trans = new Vector3(-0.5f , 0.35f, -0.3f);
-        // Vector3 cube2_base_c2_trans = new Vector3(0.5f , 0.35f, -0.3f);
-        // Vector3 cube2_base_c3_trans = new Vector3( 0.5f , 0.35f,  0.3f);    
-
-        // Cube_2_basec1.transform.SetPositionAndRotation(cube2_base_c1_trans,cube2_base_quat);
-        // Cube_2_basec2.transform.SetPositionAndRotation(cube2_base_c2_trans,cube2_base_quat);
-        // Cube_2_basec3.transform.SetPositionAndRotation(cube2_base_c3_trans,cube2_base_quat);
-
-
-        Collider Cube_2_Collider = Cube_2.GetComponent<Collider>();
         Collider Cube_2_base_Collider = Cube_2_base.GetComponent<Collider>();
-        Cube_2_Collider.enabled = !Cube_2_Collider.enabled;
         Cube_2_base_Collider.enabled = !Cube_2_base_Collider.enabled;
+        
+        // user for 1 by 0.8 plane
+        Vector3 cube2_base_c1_trans = new Vector3(-0.5f , 0.35f, 0.2f);
+        Vector3 cube2_base_c2_trans = new Vector3( 0.5f , 0.35f, 0.2f);
+        Vector3 cube2_base_c3_trans = new Vector3( 0.5f , 0.35f, 1.0f);    
+        // Vector3 cube2_base_c1_trans = new Vector3(-0.25f , 0.35f, 0.35f);
+        // Vector3 cube2_base_c2_trans = new Vector3( 0.25f , 0.35f, 0.35f);
+        // Vector3 cube2_base_c3_trans = new Vector3( 0.25f , 0.35f, 0.85f); 
+        // Vector3 cube2_base_c4_trans = new Vector3(-0.25f , 0.35f, 0.85f); 
+        Cube_2_basec1.transform.SetPositionAndRotation(cube2_base_c1_trans,cube2_base_quat);
+        Cube_2_basec2.transform.SetPositionAndRotation(cube2_base_c2_trans,cube2_base_quat);
+        Cube_2_basec3.transform.SetPositionAndRotation(cube2_base_c3_trans,cube2_base_quat);
+        // Cube_2_basec4.transform.SetPositionAndRotation(cube2_base_c4_trans,cube2_base_quat);
+
+
+        
+
+        Vector3 cube1_trans = new Vector3(0.2f , 0.40f, 0.6f);
+        Quaternion cube1_quat = Quaternion.Euler(0, 0, 0);
+        Cube_1.transform.SetPositionAndRotation(cube1_trans,cube1_quat);
+        Collider Cube_1_Collider = Cube_1.GetComponent<Collider>();
+        Cube_1_Collider.enabled = !Cube_1_Collider.enabled;
+
+
+        Vector3 cube2_trans = new Vector3(-0.2f , 0.40f,0.6f);
+        Quaternion cube2_quat = Quaternion.Euler(0, 0, 0);
+        Cube_2.transform.SetPositionAndRotation(cube2_trans,cube2_quat);
+        Collider Cube_2_Collider = Cube_2.GetComponent<Collider>();
+        Cube_2_Collider.enabled = !Cube_2_Collider.enabled;
 
         // Vector3 cube3_trans = new Vector3(-0.2f, 0.4f, 0.8f);
         // Quaternion cube3_quat = Quaternion.Euler(0, 0, 0);
@@ -139,27 +148,31 @@ public class CamPoseSubscriber: MonoBehaviour{
         Quaternion quat  = new Quaternion(quat_x,quat_y,quat_z,quat_w);
         POV.transform.SetPositionAndRotation(trans,quat);
         New_POV.transform.SetPositionAndRotation(trans,quat);
+        New_POV_1.transform.SetPositionAndRotation(trans,quat);
         Vector3 lookat_axis = new Vector3(0,1,0);
         POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
         New_POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
+        New_POV_1.transform.LookAt(Cube_2_base.transform,lookat_axis); 
         
-        Quaternion quat_base = Cube_2_base.transform.rotation;
-        Quaternion quat_pov  = POV.transform.rotation;
+        // Quaternion quat_base = Cube_2_base.transform.rotation;
+        // Quaternion quat_pov  = POV.transform.rotation;
 
+        Vector3 euler = quat.eulerAngles;
+        Debug.Log(string.Format("x: {0}, y:{1}, z:{2}",euler[0],euler[1],euler[2]));
 
-        Quaternion rel_quat  = quat_pov * Quaternion.Inverse(quat_base);
-        Vector3 rel_trans    = POV.transform.position - Cube_2_base.transform.position;
+        // Quaternion rel_quat  = quat_pov * Quaternion.Inverse(quat_base);
+        // Vector3 rel_trans    = POV.transform.position - Cube_2_base.transform.position;
 
-        CamPoseMsg pose  = new CamPoseMsg();
-        pose.x = rel_trans[0];
-        pose.y = rel_trans[1];
-        pose.z = rel_trans[2];
+        // CamPoseMsg pose  = new CamPoseMsg();
+        // pose.x = rel_trans[0];
+        // pose.y = rel_trans[1];
+        // pose.z = rel_trans[2];
 
-        pose.x_ = rel_quat.x;
-        pose.y_ = rel_quat.y;
-        pose.z_ = rel_quat.z;
-        pose.w_ = rel_quat.w;
-        ros.Publish("pov_rel_pose", pose);
+        // pose.x_ = rel_quat.x;
+        // pose.y_ = rel_quat.y;
+        // pose.z_ = rel_quat.z;
+        // pose.w_ = rel_quat.w;
+        // ros.Publish("pov_rel_pose", pose);
 
 
         // Vector3 euler = quat.eulerAngles;
