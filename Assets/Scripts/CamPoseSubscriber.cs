@@ -14,18 +14,24 @@ using System;
 
 public class CamPoseSubscriber: MonoBehaviour{
 
-    public GameObject Table;
     public GameObject Cube_1;
     public GameObject Cube_2;
     public GameObject Cube_2_base;
     public GameObject Cube_2_basec1;
     public GameObject Cube_2_basec2;
     public GameObject Cube_2_basec3;
-    public GameObject Cube_2_basec4;
-    // public GameObject Cube_3;
+
     public Camera POV = new Camera();
     public Camera New_POV = new Camera();
     public Camera New_POV_1 = new Camera();
+
+    public float table_x = 0.0f;
+    public float table_y = 0.30f;
+    public float table_z = 0.47f;
+
+    // temp 
+    public float cube_height = 0.05f;
+
     ROSConnection ros;
     public string topicName = "pov_pose";
     public float trans_x,trans_y,trans_z;
@@ -42,6 +48,18 @@ public class CamPoseSubscriber: MonoBehaviour{
 
     }
 
+    void ApplyPRAndCollision(GameObject obj, Vector3 trans, Quaternion quat, bool Collide = false){
+        obj.transform.SetPositionAndRotation(trans,quat);
+        Collider obj_collider = obj.GetComponent<Collider>();
+        if (Collide == false){
+            obj_collider.enabled = !obj_collider.enabled;
+        }
+        else{
+            obj_collider.enabled = true;
+        }
+
+    }
+
     void Start(){
 
         Cube_1        = GameObject.Find("Cube_1");
@@ -50,19 +68,17 @@ public class CamPoseSubscriber: MonoBehaviour{
         Cube_2_basec1 = GameObject.Find("Base_Plate_c1");
         Cube_2_basec2 = GameObject.Find("Base_Plate_c2");
         Cube_2_basec3 = GameObject.Find("Base_Plate_c3");
-        Cube_2_basec4 = GameObject.Find("Base_Plate_c4");
         
         shade = Shader.Find("Unlit/Color");
+       
         Color customColor = new Color(0.4f, 0.9f, 0.7f, 1.0f);
         Color new_color   = new Color(1f, 1f, 1f, 1.0f);
-        ApplyMaterial(Cube_2_base   , customColor);
+        ApplyMaterial(Cube_2_base   , new_color);
         ApplyMaterial(Cube_2_basec1 , Color.red);
         ApplyMaterial(Cube_2_basec2,  Color.green);
         ApplyMaterial(Cube_2_basec3,  Color.blue);
-        ApplyMaterial(Cube_2_basec4,  new_color);
         
     
-        Table     = GameObject.Find("table_top");
         POV       = GameObject.Find("POV").GetComponent<Camera>();
         New_POV   = GameObject.Find("New_POV").GetComponent<Camera>();
         New_POV_1 = GameObject.Find("New_POV_1").GetComponent<Camera>();
@@ -72,54 +88,28 @@ public class CamPoseSubscriber: MonoBehaviour{
         ros.RegisterPublisher<CamPoseMsg>("pov_rel_pose");
 
 
-        Vector3 cube2_base_trans = new Vector3(0.0f , 0.35f,0.6f);
+        // Base Plane
+        Vector3 cube2_base_trans = new Vector3(table_x , table_y, table_z);
         Quaternion cube2_base_quat = Quaternion.Euler(0, 0, 0);
-        Cube_2_base.transform.SetPositionAndRotation(cube2_base_trans,cube2_base_quat);
-        Collider Cube_2_base_Collider = Cube_2_base.GetComponent<Collider>();
-        Cube_2_base_Collider.enabled = !Cube_2_base_Collider.enabled;
+        ApplyPRAndCollision(Cube_2_base, cube2_base_trans, cube2_base_quat);
         
-        // user for 1 by 0.8 plane
-        Vector3 cube2_base_c1_trans = new Vector3(-0.5f , 0.35f, 0.2f);
-        Vector3 cube2_base_c2_trans = new Vector3( 0.5f , 0.35f, 0.2f);
-        Vector3 cube2_base_c3_trans = new Vector3( 0.5f , 0.35f, 1.0f);    
-        // Vector3 cube2_base_c1_trans = new Vector3(-0.25f , 0.35f, 0.35f);
-        // Vector3 cube2_base_c2_trans = new Vector3( 0.25f , 0.35f, 0.35f);
-        // Vector3 cube2_base_c3_trans = new Vector3( 0.25f , 0.35f, 0.85f); 
-        // Vector3 cube2_base_c4_trans = new Vector3(-0.25f , 0.35f, 0.85f); 
-        Cube_2_basec1.transform.SetPositionAndRotation(cube2_base_c1_trans,cube2_base_quat);
-        Cube_2_basec2.transform.SetPositionAndRotation(cube2_base_c2_trans,cube2_base_quat);
-        Cube_2_basec3.transform.SetPositionAndRotation(cube2_base_c3_trans,cube2_base_quat);
-        // Cube_2_basec4.transform.SetPositionAndRotation(cube2_base_c4_trans,cube2_base_quat);
+        // RGB Planes
+        Vector3 cube2_base_c1_trans = new Vector3(-0.5f , table_y, 0.2f);
+        Vector3 cube2_base_c2_trans = new Vector3( 0.5f , table_y, 0.2f);
+        Vector3 cube2_base_c3_trans = new Vector3( 0.5f , table_y, 1.0f);    
+        ApplyPRAndCollision(Cube_2_basec1, cube2_base_c1_trans, Quaternion.Euler(0,0,0));
+        ApplyPRAndCollision(Cube_2_basec2, cube2_base_c2_trans, Quaternion.Euler(0,0,0));
+        ApplyPRAndCollision(Cube_2_basec3, cube2_base_c3_trans, Quaternion.Euler(0,0,0));
 
 
-        
-
-        Vector3 cube1_trans = new Vector3(0.2f , 0.40f, 0.6f);
+        Vector3 cube1_trans = new Vector3( (table_x + 0.2f) , (table_y + cube_height), table_z);
         Quaternion cube1_quat = Quaternion.Euler(0, 0, 0);
-        Cube_1.transform.SetPositionAndRotation(cube1_trans,cube1_quat);
-        Collider Cube_1_Collider = Cube_1.GetComponent<Collider>();
-        Cube_1_Collider.enabled = !Cube_1_Collider.enabled;
+        ApplyPRAndCollision(Cube_1, cube1_trans, cube1_quat);
 
-
-        Vector3 cube2_trans = new Vector3(-0.2f , 0.40f,0.6f);
+        Vector3 cube2_trans = new Vector3(-(table_x + 0.2f),  (table_y + cube_height), table_z);
         Quaternion cube2_quat = Quaternion.Euler(0, 0, 0);
-        Cube_2.transform.SetPositionAndRotation(cube2_trans,cube2_quat);
-        Collider Cube_2_Collider = Cube_2.GetComponent<Collider>();
-        Cube_2_Collider.enabled = !Cube_2_Collider.enabled;
-
-        // Vector3 cube3_trans = new Vector3(-0.2f, 0.4f, 0.8f);
-        // Quaternion cube3_quat = Quaternion.Euler(0, 0, 0);
-        // Cube_3.transform.SetPositionAndRotation(cube3_trans,cube3_quat);
-        // Collider Cube_3_Collider = Cube_3.GetComponent<Collider>();
-        // Cube_3_Collider.enabled = !Cube_3_Collider.enabled;
-
-        // Trying other way around 
-
-        // Vector3 POV_Trans = new Vector3(0.0f , 0.0f,0.0f);
-        // Quaternion POV_Quat = Quaternion.Euler(0, 0, 180);
-        // POV.transform.SetPositionAndRotation(POV_Trans,POV_Quat);
-        // Collider Cube_2_Collider = Cube_2.GetComponent<Collider>();
-
+        ApplyPRAndCollision(Cube_2, cube2_trans, cube2_quat);
+    
     }
 
     void PoseCallback(CamPoseMsg msg){

@@ -29,7 +29,7 @@ public class ImagePublisher: MonoBehaviour{
     private float timeElapsed;
     public RenderTexture renderTexture;
     // public float f = 35.0f;
-    public float f = 5.0f;
+    public float f = 1.0f;
     public int Pwdith = 800;
     public int Pheight = 600;
     public void Start(){
