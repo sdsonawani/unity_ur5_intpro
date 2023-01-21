@@ -390,6 +390,7 @@
 "Assets/Scripts/ObjectPosePublisher.cs"
 "Assets/Scripts/ProjectionMapping.cs"
 "Assets/Scripts/PublishUr5Joints.cs"
+"Assets/Scripts/PublishUr5JointsSingle.cs"
 "Assets/Scripts/SubscribeUr5Joints.cs"
 "Assets/Scripts/SubscribeUr5ShadowJoints.cs"
 -langversion:9.0
