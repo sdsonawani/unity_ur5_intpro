@@ -468,3 +468,39 @@ AssetImportParameters requested are different than current active one (requested
   custom:container-demuxer-ogg: 62fdf1f143b41e24485cea50d1cbac27 -> 
   custom:video-decoder-webm-vp8: 9c59270c3fd7afecdb556c50c9e8de78 -> 
   custom:audio-decoder-ogg-vorbis: bf7c407c2cedff20999df2af8eb42d56 -> 
+========================================================================
+Received Import Request.
+  Time since last request: 3805.744909 seconds.
+  path: Assets/urdf/ur_description/meshes/ur5/collision/base.prefab
+  artifactKey: Guid(5d7b6359679dbb48e8d8311a06b9be75) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/urdf/ur_description/meshes/ur5/collision/base.prefab using Guid(5d7b6359679dbb48e8d8311a06b9be75) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '9b14d5680d682334c905a1e102a6d09b') in 0.174317 seconds 
+========================================================================
+Received Import Request.
+  Time since last request: 0.000029 seconds.
+  path: Assets/urdf/ur_description/meshes/ur5/collision/forearm.prefab
+  artifactKey: Guid(4abcc1cd5e8e8e17c89fdade1bc0b852) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/urdf/ur_description/meshes/ur5/collision/forearm.prefab using Guid(4abcc1cd5e8e8e17c89fdade1bc0b852) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '01844c06bddd38061127e9450b37c9a6') in 0.008106 seconds 
+========================================================================
+Received Import Request.
+  Time since last request: 0.000033 seconds.
+  path: Assets/urdf/ur_description/meshes/ur5/collision/wrist1.prefab
+  artifactKey: Guid(30349b9b7f8df0226986ebe698a4a39e) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/urdf/ur_description/meshes/ur5/collision/wrist1.prefab using Guid(30349b9b7f8df0226986ebe698a4a39e) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '2f0820596b4ac077afd8fae2bccf190e') in 0.007478 seconds 
+========================================================================
+Received Import Request.
+  Time since last request: 0.000020 seconds.
+  path: Assets/urdf/robotiq_description/meshes/collision/robotiq_85_base_link.prefab
+  artifactKey: Guid(509b3bdb312e8938b84009f5a2f49958) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/urdf/robotiq_description/meshes/collision/robotiq_85_base_link.prefab using Guid(509b3bdb312e8938b84009f5a2f49958) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'a6fca3d81608abd494fbbeb8b6d254f9') in 0.056165 seconds 
+========================================================================
+Received Import Request.
+  Time since last request: 0.000023 seconds.
+  path: Assets/urdf/ur_description/meshes/ur5/collision/upperarm.prefab
+  artifactKey: Guid(b9f9d12bbe98cdf4792007380d631150) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/urdf/ur_description/meshes/ur5/collision/upperarm.prefab using Guid(b9f9d12bbe98cdf4792007380d631150) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'c39f467e1fa2276d4d2abbd9aecae9df') in 0.008117 seconds 
+========================================================================
+Received Import Request.
+  Time since last request: 0.000018 seconds.
+  path: Assets/urdf/ur_description/meshes/ur5/collision/shoulder.prefab
+  artifactKey: Guid(150a063930a408c5b8523861f8013955) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/urdf/ur_description/meshes/ur5/collision/shoulder.prefab using Guid(150a063930a408c5b8523861f8013955) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '33effce08b1cb647fc375960abfc1fc3') in 0.008809 seconds 

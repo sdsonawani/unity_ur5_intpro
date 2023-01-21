@@ -1,0 +1,41 @@
+
+joint_0_position_controller:
+  type: position_controllers/JointPositionController
+  joint: shoulder_pan_joint
+
+joint_1_position_controller:
+  type: position_controllers/JointPositionController
+  joint: shoulder_lift_joint
+
+joint_2_position_controller:
+  type: position_controllers/JointPositionController
+  joint: elbow_joint
+
+joint_3_position_controller:
+  type: position_controllers/JointPositionController
+  joint: wrist_1_joint
+
+joint_4_position_controller:
+  type: position_controllers/JointPositionController
+  joint: wrist_2_joint
+
+joint_5_position_controller:
+  type: position_controllers/JointPositionController
+  joint: wrist_3_joint
+  
+finger_position_controller:
+  type: position_controllers/JointPositionController
+  joint: robotiq_85_left_knuckle_joint
+  # gripper_position_controller:
+  #   type: position_controllers/JointGroupPositionController
+  #   joints:
+  #     - rh_p12_rn
+  #     - rh_r2
+  #     - rh_l1
+  #     - rh_l2
+  #      - shoulder_pan_joint
+  #    - shoulder_lift_joint
+  #    - elbow_joint
+  #    - wrist_1_joint
+  #    - wrist_2_joint
+  #    - wrist_3_joint
