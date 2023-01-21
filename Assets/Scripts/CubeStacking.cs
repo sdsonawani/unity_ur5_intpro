@@ -13,13 +13,12 @@ using System.Collections;
 using System.IO;
 
 
-
-public class CubeStacking: MonoBehaviour{
-
+public class CubeStacking : MonoBehaviour
+{
     public GameObject Cube_1;
     public GameObject CubeNCube;
 
-    ROSConnection ros;
+    private ROSConnection ros;
     public Shader shade;
 
     public float baseX = 0.0f;
@@ -27,43 +26,37 @@ public class CubeStacking: MonoBehaviour{
     public float baseZ = 0.6f;
 
 
-    void ApplyMaterial(GameObject obj, Color color){
-        Material mat = obj.GetComponent<Renderer>().material;
+    private void ApplyMaterial(GameObject obj, Color color)
+    {
+        var mat = obj.GetComponent<Renderer>().material;
         // mat.shader = shade;
         mat.color = color;
-
     }
 
-    void ApplyProperties(GameObject obj, Vector3 trans, Quaternion quat, bool Collide = false){
-        obj.transform.SetPositionAndRotation(trans,quat);
-        Collider obj_collider = obj.GetComponent<Collider>();
-        if (Collide == false){
+    private void ApplyProperties(GameObject obj, Vector3 trans, Quaternion quat, bool Collide = false)
+    {
+        obj.transform.SetPositionAndRotation(trans, quat);
+        var obj_collider = obj.GetComponent<Collider>();
+        if (Collide == false)
             obj_collider.enabled = !obj_collider.enabled;
-        }
-        else{
+        else
             obj_collider.enabled = true;
-        }
-
     }
 
-    void Start(){
-
+    private void Start()
+    {
         Cube_1 = GameObject.Find("Cube_4");
         CubeNCube = GameObject.Find("CubeNCube");
 
-        Color Cube_1_Color      = new Color(0.0f, 0.9f, 0.0f, 1.0f);        
-        Vector3 CubeTrans       = new Vector3(baseX, baseY, baseZ);
-        ApplyProperties(Cube_1, CubeTrans, Quaternion.Euler(0,0,0), true);
+        var Cube_1_Color = new Color(0.0f, 0.9f, 0.0f, 1.0f);
+        var CubeTrans = new Vector3(baseX, baseY, baseZ);
+        ApplyProperties(Cube_1, CubeTrans, Quaternion.Euler(0, 0, 0), true);
         ApplyMaterial(Cube_1, Cube_1_Color);
 
 
-        Color CubeNCube_Color   = new Color(1f, 0f, 0f, 1.0f);
-        Vector3 CubeNCubeTrans  = new Vector3(baseX, baseY + 0.05f, baseZ);
-        ApplyProperties(CubeNCube, CubeNCubeTrans, Quaternion.Euler(0,0,0), true);
+        var CubeNCube_Color = new Color(1f, 0f, 0f, 1.0f);
+        var CubeNCubeTrans = new Vector3(baseX, baseY + 0.05f, baseZ);
+        ApplyProperties(CubeNCube, CubeNCubeTrans, Quaternion.Euler(0, 0, 0), true);
         ApplyMaterial(CubeNCube, CubeNCube_Color);
-
     }
-
-  
-
 }

@@ -8,10 +8,10 @@ using System;
 
 public class PublishUr5Joints : MonoBehaviour
 {
-    ROSConnection ros;
+    private ROSConnection ros;
     public string topicName = "unity_ur5/joints";
     public string topicNameShadow = "unity_ur5_shadow/joints";
-    const int num_joints = 6;
+    private const int num_joints = 6;
 
 
     // The game object
@@ -20,31 +20,36 @@ public class PublishUr5Joints : MonoBehaviour
 
     // Publish the cube's position and rotation every N seconds
     public float publishMessageFrequency = 0.01f;
+
     // Used to determine how much time has elapsed since the last message was published
     private float timeElapsed;
 
     public static readonly string[] LinkNames =
-        { "world/dummy_link/base_link/shoulder_link", "/upper_arm_link", "/forearm_link", "/wrist_1_link",  "/wrist_2_link",  "/wrist_3_link" };
+    {
+        "world/dummy_link/base_link/shoulder_link", "/upper_arm_link", "/forearm_link", "/wrist_1_link",
+        "/wrist_2_link", "/wrist_3_link"
+    };
 
-    UrdfJointRevolute[] m_jab;
-    UrdfJointRevolute[] m_Shadow_jab;
+    private UrdfJointRevolute[] m_jab;
+    private UrdfJointRevolute[] m_Shadow_jab;
 
-    void Start()
+    private void Start()
     {
         // start the ROS connection
         ros = ROSConnection.GetOrCreateInstance();
         ros.RegisterPublisher<Ur5JointsMsg>(topicName);
         ros.RegisterPublisher<Ur5JointsMsg>(topicNameShadow);
         // Debug.developerConsoleVisible = true;
-        
-        ur5   = GameObject.Find("ur5");
+
+        ur5 = GameObject.Find("ur5");
         ur5_1 = GameObject.Find("ur5_1");
 
 
         m_jab = new UrdfJointRevolute[num_joints];
         m_Shadow_jab = new UrdfJointRevolute[num_joints];
         var link_names = string.Empty;
-        for (var i = 0; i < num_joints; i++){
+        for (var i = 0; i < num_joints; i++)
+        {
             link_names += LinkNames[i];
             m_jab[i] = ur5.transform.Find(link_names).GetComponent<UrdfJointRevolute>();
             m_Shadow_jab[i] = ur5_1.transform.Find(link_names).GetComponent<UrdfJointRevolute>();
@@ -56,24 +61,25 @@ public class PublishUr5Joints : MonoBehaviour
     {
         timeElapsed += Time.deltaTime;
         if (timeElapsed > publishMessageFrequency)
-        {      
+        {
             // double[] j_ = new double[] {0.1,0.1,0.1,0.1,0.1,0.1};
-            double[] j_ = new double[6];
-            double[] j_Shadow = new double[6];
-            for(var i = 0; i<num_joints; i++ ){
-
-                if (i==1 || i == 3){
-                   j_[i] =  m_jab[i].GetPosition() - (Math.PI/2.0);
-                   j_Shadow[i] =  m_Shadow_jab[i].GetPosition() - (Math.PI/2.0);
+            var j_ = new double[6];
+            var j_Shadow = new double[6];
+            for (var i = 0; i < num_joints; i++)
+                if (i == 1 || i == 3)
+                {
+                    j_[i] = m_jab[i].GetPosition() - Math.PI / 2.0;
+                    j_Shadow[i] = m_Shadow_jab[i].GetPosition() - Math.PI / 2.0;
                 }
-                else{
+                else
+                {
                     j_[i] = m_jab[i].GetPosition();
-                    j_Shadow[i] =  m_Shadow_jab[i].GetPosition();
+                    j_Shadow[i] = m_Shadow_jab[i].GetPosition();
                 }
-                // Debug.Log(string.Format("{0}",j_[i]));
-            }
-            Ur5JointsMsg joints = new Ur5JointsMsg(j_);
-            Ur5JointsMsg jointsShadow = new Ur5JointsMsg(j_Shadow);
+
+            // Debug.Log(string.Format("{0}",j_[i]));
+            var joints = new Ur5JointsMsg(j_);
+            var jointsShadow = new Ur5JointsMsg(j_Shadow);
 
 
             ros.Publish(topicName, joints);
