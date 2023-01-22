@@ -4,7 +4,7 @@ using System.Linq;
 using System.Xml.Linq;
 using UnityEngine;
 
-namespace SmartWatchStream
+namespace SmartWatchStream.Scripts
 {
     public class DollAnimator : MonoBehaviour
     {
