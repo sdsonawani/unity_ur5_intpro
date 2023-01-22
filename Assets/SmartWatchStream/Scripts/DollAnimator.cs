@@ -119,7 +119,16 @@ namespace SmartWatchStream.Scripts
 
             // create a new object if it doesn't exist yet 
             if (!_rootObj)
+            {
                 _rootObj = new GameObject("Generated_" + skeletonName);
+                // attach it to the dest game object
+                var parentTransform = destGameObject.transform;
+                _rootObj.transform.SetPositionAndRotation(
+                    parentTransform.position,
+                    parentTransform.rotation
+                );
+                _rootObj.transform.parent = parentTransform;
+            }
 
             // recreate Motive skeleton structure in Unity
             foreach (var bone in bonesQuery)
