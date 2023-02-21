@@ -45,34 +45,34 @@ public class SubscribeUr5ShadowJoints : MonoBehaviour
     ArticulationBody[] m_robotiqGripperR;
     ArticulationBody[] m_robotiqGripperL;
 
-    public float p_gain = 5.0f;
-    public float i_gain = 0.8f;
-    public float d_gain = 1.0f;
+    public float p_gain = 6.0f;//5.0f;
+    public float i_gain = 0.1f;//0.8f;
+    public float d_gain = 1.0f;//1.0f;
+    public float m_i_max =  0.7f;//(float)Math.PI;
+    public float m_i_min = -0.7f;//(float)Math.PI;
     public float[] p_istate = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
     public float[] p_dstate = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
-    public float m_i_max = (float)Math.PI;
-    public float m_i_min = -(float)Math.PI;
 
     public float   p_gain_eel   = 5.0f;
     public float   i_gain_eel   = 1.8f;
     public float   d_gain_eel   = 1.0f;
-    public float[] p_istate_eel = {0.0f, 0.0f, 0.0f};
-    public float[] p_dstate_eel = {0.0f, 0.0f, 0.0f};
     public float   m_i_max_eel  = (float)Math.PI;
     public float   m_i_min_eel  = -(float)Math.PI;
+    public float[] p_istate_eel = {0.0f, 0.0f, 0.0f};
+    public float[] p_dstate_eel = {0.0f, 0.0f, 0.0f};
+
 
     public float   p_gain_eer   = 5.0f;
     public float   i_gain_eer   = 1.8f;
     public float   d_gain_eer   = 1.0f;
-    public float[] p_istate_eer = {0.0f, 0.0f, 0.0f};
-    public float[] p_dstate_eer = {0.0f, 0.0f, 0.0f};
     public float   m_i_max_eer  = (float)Math.PI;
     public float   m_i_min_eer  = -(float)Math.PI;
-
+    public float[] p_istate_eer = {0.0f, 0.0f, 0.0f};
+    public float[] p_dstate_eer = {0.0f, 0.0f, 0.0f};
 
     private float curr_j = 0.0f;
     
-    public float gripper_goal = 90f;
+    public float gripper_goal = 0.0f;
 
 
     void Start()
@@ -124,7 +124,7 @@ public class SubscribeUr5ShadowJoints : MonoBehaviour
 
             if (i == 1){
                 var error = (float)(-gripper_goal * Math.PI/ 180) - (float)RobotiqBody[i].jointPosition[0];
-                Debug.Log(string.Format("Robotiq Debug: {0}",RobotiqBody[i].jointPosition[0]));
+                // Debug.Log(string.Format("Robotiq Debug: {0}",RobotiqBody[i].jointPosition[0]));
                 
                 // apply pid controller
                 if (ee_type == "left"){
@@ -259,9 +259,9 @@ public class SubscribeUr5ShadowJoints : MonoBehaviour
                 p_dstate[i] = (float)error;
 
                 // apply target position and velocity
-                currentJDrive.damping = 1e+18f;
-                currentJDrive.stiffness = 1e+18f;
-                currentJDrive.forceLimit = 1e+20f;
+                currentJDrive.damping = 1e+10f;
+                currentJDrive.stiffness = 1e+1f;
+                currentJDrive.forceLimit = 1e+12f;
                 currentJDrive.target = (float)(goal_j * 180 / Math.PI);
                 currentJDrive.targetVelocity = (float)(velocity * 180 / Math.PI);
                 ur5_body[i].xDrive = currentJDrive;

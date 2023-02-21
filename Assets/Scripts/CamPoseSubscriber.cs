@@ -148,7 +148,7 @@ public class CamPoseSubscriber: MonoBehaviour{
         // Quaternion quat_pov  = POV.transform.rotation;
 
         Vector3 euler = quat.eulerAngles;
-        Debug.Log(string.Format("x: {0}, y:{1}, z:{2}",euler[0],euler[1],euler[2]));
+        // Debug.Log(string.Format("x: {0}, y:{1}, z:{2}",euler[0],euler[1],euler[2]));
 
         // Quaternion rel_quat  = quat_pov * Quaternion.Inverse(quat_base);
         // Vector3 rel_trans    = POV.transform.position - Cube_2_base.transform.position;

@@ -88,7 +88,7 @@ class ProjectionMapping: MonoBehaviour{
         
     
         Destroy(ShadowImage);
-        Debug.Log("Update in Projection Mapping");
+        // Debug.Log("Update in Projection Mapping");
 
     }
 }
