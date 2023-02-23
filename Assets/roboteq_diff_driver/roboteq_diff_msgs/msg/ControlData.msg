@@ -1,0 +1,13 @@
+float64 linear_distance
+float64 angular_distance
+float64 dt
+float64 inductive_prox_left_filtered
+float64 inductive_prox_right_filtered
+bool ir_aluminum_lf
+bool ir_aluminum_rf
+bool ir_aluminum_lr
+bool ir_aluminum_rr
+bool ir_retro_left
+bool ir_retro_right
+bool chrg_hall
+float32 v_bat
