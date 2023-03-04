@@ -28,14 +28,14 @@ namespace SmartWatchStream.Scripts
 
         public void MoveBoneMap(Dictionary<string, GameObject> boneMap)
         {
-            var hPos = boneMap["Hips"].transform.position;
+            var uaPos = boneMap["LeftUpperArm"].transform.position;
 
             boneMap["LeftHand"].transform.SetPositionAndRotation(
-                _leftHandObj.transform.position + hPos,
+                _leftHandObj.transform.position + uaPos,
                 _leftHandObj.transform.rotation
             );
             boneMap["LeftLowerArm"].transform.SetPositionAndRotation(
-                _leftLowerArmObj.transform.position + hPos,
+                _leftLowerArmObj.transform.position + uaPos,
                 _leftLowerArmObj.transform.rotation
             );
             boneMap["LeftUpperArm"].transform.rotation = _leftUpperArmObj.transform.rotation;
@@ -49,22 +49,19 @@ namespace SmartWatchStream.Scripts
         private void SmartWatchCallback(Float32MultiArrayMsg msg)
         {
             // read wrist position and rotation from message
-            var pos = new Vector3(msg.data[0], msg.data[1], msg.data[2]);
-            var rot = new Quaternion(w: msg.data[3], x: msg.data[4], y: msg.data[5], z: msg.data[6]);
-            _leftHandObj.transform.SetPositionAndRotation(pos, rot);
+            var hPos = new Vector3(msg.data[0], msg.data[1], msg.data[2]);
+            var hRot = new Quaternion(w: msg.data[3], x: msg.data[4], y: msg.data[5], z: msg.data[6]);
+            _leftHandObj.transform.SetPositionAndRotation(hPos, hRot);
 
             // read elbow position and rotation from message
             var ePos = new Vector3(msg.data[7], msg.data[8], msg.data[9]);
-            var eRot = new Quaternion(w: msg.data[10], x: msg.data[11], y: msg.data[12], z: msg.data[13]);
-            _leftLowerArmObj.transform.SetPositionAndRotation(ePos, eRot);
+            _leftLowerArmObj.transform.SetPositionAndRotation(ePos, hRot);
 
             // read shoulder position and rotation from message
-            var sPos = new Vector3(msg.data[14], msg.data[15], msg.data[16]);
-            var sRot = new Quaternion(w: msg.data[17], x: msg.data[18], y: msg.data[19], z: msg.data[20]);
-            _leftUpperArmObj.transform.SetPositionAndRotation(sPos, sRot);
+            var sRot = new Quaternion(w: msg.data[10], x: msg.data[11], y: msg.data[12], z: msg.data[13]);
+            _leftUpperArmObj.transform.rotation = sRot;
 
-
-            _gripperState = msg.data[21];
+            _gripperState = msg.data[14];
         }
     }
 }

@@ -24,7 +24,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ide.rider": {
-      "version": "3.0.16",
+      "version": "3.0.18",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -33,7 +33,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ide.visualstudio": {
-      "version": "2.0.16",
+      "version": "2.0.17",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -72,7 +72,7 @@
       "hash": "90f353e4352aae4df52fa2c05e49b804631d2a63"
     },
     "com.unity.services.core": {
-      "version": "1.6.0",
+      "version": "1.7.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {
