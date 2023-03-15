@@ -17,9 +17,11 @@ public class CamPoseSubscriber: MonoBehaviour{
     public GameObject Cube_1;
     public GameObject Cube_2;
     public GameObject Cube_2_base;
+    public GameObject Cube_2_base1;
     public GameObject Cube_2_basec1;
     public GameObject Cube_2_basec2;
     public GameObject Cube_2_basec3;
+    public GameObject Cube_2_basec4;
 
     public Camera POV = new Camera();
     public Camera New_POV = new Camera();
@@ -65,9 +67,11 @@ public class CamPoseSubscriber: MonoBehaviour{
         Cube_1        = GameObject.Find("Cube_1");
         Cube_2        = GameObject.Find("Cube_2");
         Cube_2_base   = GameObject.Find("Base_Plate");
+        Cube_2_base1   = GameObject.Find("Checkerboard");
         Cube_2_basec1 = GameObject.Find("Base_Plate_c1");
         Cube_2_basec2 = GameObject.Find("Base_Plate_c2");
         Cube_2_basec3 = GameObject.Find("Base_Plate_c3");
+        Cube_2_basec4 = GameObject.Find("Base_Plate_c4");
         
         shade = Shader.Find("Unlit/Color");
        
@@ -77,6 +81,7 @@ public class CamPoseSubscriber: MonoBehaviour{
         ApplyMaterial(Cube_2_basec1 , Color.red);
         ApplyMaterial(Cube_2_basec2,  Color.green);
         ApplyMaterial(Cube_2_basec3,  Color.blue);
+        ApplyMaterial(Cube_2_basec4,  Color.cyan);
         
     
         POV       = GameObject.Find("POV").GetComponent<Camera>();
@@ -90,20 +95,29 @@ public class CamPoseSubscriber: MonoBehaviour{
 
         // Base Plane
         Vector3 cube2_base_trans = new Vector3(table_x , table_y, table_z);
+        Vector3 cube2_base_trans1 = new Vector3(table_x , table_y+0.01f, table_z);
         Quaternion cube2_base_quat = Quaternion.Euler(0, 0, 0);
         ApplyPRAndCollision(Cube_2_base, cube2_base_trans, cube2_base_quat);
+        ApplyPRAndCollision(Cube_2_base1, cube2_base_trans1, cube2_base_quat);
         
         // RGB Planes
-        Vector3 cube2_base_c1_trans = new Vector3(-0.5f , table_y, 0.2f);
-        Vector3 cube2_base_c2_trans = new Vector3( 0.5f , table_y, 0.2f);
-        Vector3 cube2_base_c3_trans = new Vector3( 0.5f , table_y, 1.0f);    
+        // Vector3 cube2_base_c1_trans = new Vector3(-0.5f , table_y, 0.2f);
+        // Vector3 cube2_base_c2_trans = new Vector3( 0.5f , table_y, 0.2f);
+        // Vector3 cube2_base_c3_trans = new Vector3( 0.5f , table_y, 1.0f);    
+        // Vector3 cube2_base_c4_trans = new Vector3(- 0.5f , table_y, 1.0f);    
+
+        Vector3 cube2_base_c1_trans = new Vector3(-0.75f , table_y, 0.2f);
+        Vector3 cube2_base_c2_trans = new Vector3( 0.75f , table_y, 0.2f);
+        Vector3 cube2_base_c3_trans = new Vector3( 0.75f , table_y, 1.0f);    
+        Vector3 cube2_base_c4_trans = new Vector3(- 0.75f , table_y, 1.0f);
         ApplyPRAndCollision(Cube_2_basec1, cube2_base_c1_trans, Quaternion.Euler(0,0,0));
         ApplyPRAndCollision(Cube_2_basec2, cube2_base_c2_trans, Quaternion.Euler(0,0,0));
         ApplyPRAndCollision(Cube_2_basec3, cube2_base_c3_trans, Quaternion.Euler(0,0,0));
+        ApplyPRAndCollision(Cube_2_basec4, cube2_base_c4_trans, Quaternion.Euler(0,0,0));
 
 
         Vector3 cube1_trans = new Vector3( (table_x + 0.2f) , (table_y + cube_height), table_z);
-        Quaternion cube1_quat = Quaternion.Euler(0, 0, 0);
+        Quaternion cube1_quat = Quaternion.Euler(0, 0, 90f);
         ApplyPRAndCollision(Cube_1, cube1_trans, cube1_quat);
 
         Vector3 cube2_trans = new Vector3(-(table_x + 0.2f),  (table_y + cube_height), table_z);
