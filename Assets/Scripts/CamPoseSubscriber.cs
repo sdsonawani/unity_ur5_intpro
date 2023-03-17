@@ -95,7 +95,7 @@ public class CamPoseSubscriber: MonoBehaviour{
 
         // Base Plane
         Vector3 cube2_base_trans = new Vector3(table_x , table_y, table_z);
-        Vector3 cube2_base_trans1 = new Vector3(table_x , table_y+0.01f, table_z);
+        Vector3 cube2_base_trans1 = new Vector3(table_x , table_y+10.01f, table_z);
         Quaternion cube2_base_quat = Quaternion.Euler(0, 0, 0);
         ApplyPRAndCollision(Cube_2_base, cube2_base_trans, cube2_base_quat);
         ApplyPRAndCollision(Cube_2_base1, cube2_base_trans1, cube2_base_quat);

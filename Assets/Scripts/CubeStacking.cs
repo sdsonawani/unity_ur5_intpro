@@ -53,13 +53,13 @@ public class CubeStacking: MonoBehaviour{
 
         Color Cube_1_Color      = new Color(0.0f, 0.9f, 0.0f, 1.0f);        
         Vector3 CubeTrans       = new Vector3(baseX, baseY, baseZ);
-        ApplyProperties(Cube_1, CubeTrans, Quaternion.Euler(0,0,0), true);
+        // ApplyProperties(Cube_1, CubeTrans, Quaternion.Euler(0,0,0), true);
         // ApplyMaterial(Cube_1, Cube_1_Color);
 
 
         Color CubeNCube_Color   = new Color(1f, 0f, 0f, 1.0f);
         Vector3 CubeNCubeTrans  = new Vector3(baseX, baseY + 0.05f, baseZ);
-        ApplyProperties(CubeNCube, CubeNCubeTrans, Quaternion.Euler(0,0,0), true);
+        // ApplyProperties(CubeNCube, CubeNCubeTrans, Quaternion.Euler(0,0,0), true);
         // ApplyMaterial(CubeNCube, CubeNCube_Color);
 
     }
