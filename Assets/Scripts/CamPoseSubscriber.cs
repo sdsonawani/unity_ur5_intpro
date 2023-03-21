@@ -14,6 +14,7 @@ using System;
 
 public class CamPoseSubscriber: MonoBehaviour{
 
+    public bool use_headtrack = true;
     public GameObject Cube_1;
     public GameObject Cube_2;
     public GameObject Cube_2_base;
@@ -36,8 +37,13 @@ public class CamPoseSubscriber: MonoBehaviour{
 
     ROSConnection ros;
     public string topicName = "pov_pose";
+    public string htopicName = "human_pose";
     public float trans_x,trans_y,trans_z;
     public float quat_w,quat_x,quat_y,quat_z;
+
+    public float htrans_x,htrans_y,htrans_z;
+    public float hquat_w,hquat_x,hquat_y,hquat_z;
+
     public float offset  = 0;
     public HeaderMsg msg_ = new HeaderMsg();
     Camera cam;
@@ -90,6 +96,7 @@ public class CamPoseSubscriber: MonoBehaviour{
 
         ros =  ROSConnection.GetOrCreateInstance();
         ros.Subscribe<CamPoseMsg>(topicName, PoseCallback);
+        ros.Subscribe<CamPoseMsg>(htopicName, HPoseCallback);
         ros.RegisterPublisher<CamPoseMsg>("pov_rel_pose");
 
 
@@ -106,10 +113,10 @@ public class CamPoseSubscriber: MonoBehaviour{
         // Vector3 cube2_base_c3_trans = new Vector3( 0.5f , table_y, 1.0f);    
         // Vector3 cube2_base_c4_trans = new Vector3(- 0.5f , table_y, 1.0f);    
 
-        Vector3 cube2_base_c1_trans = new Vector3(-0.75f , table_y, 0.2f);
-        Vector3 cube2_base_c2_trans = new Vector3( 0.75f , table_y, 0.2f);
-        Vector3 cube2_base_c3_trans = new Vector3( 0.75f , table_y, 1.0f);    
-        Vector3 cube2_base_c4_trans = new Vector3(- 0.75f , table_y, 1.0f);
+        Vector3 cube2_base_c1_trans = new Vector3(- 0.75f, table_y, 0.075f);
+        Vector3 cube2_base_c2_trans = new Vector3(  0.75f, table_y, 0.075f);
+        Vector3 cube2_base_c3_trans = new Vector3(  0.75f, table_y, 0.875f);    
+        Vector3 cube2_base_c4_trans = new Vector3(- 0.75f, table_y, 0.875f);
         ApplyPRAndCollision(Cube_2_basec1, cube2_base_c1_trans, Quaternion.Euler(0,0,0));
         ApplyPRAndCollision(Cube_2_basec2, cube2_base_c2_trans, Quaternion.Euler(0,0,0));
         ApplyPRAndCollision(Cube_2_basec3, cube2_base_c3_trans, Quaternion.Euler(0,0,0));
@@ -136,6 +143,16 @@ public class CamPoseSubscriber: MonoBehaviour{
         quat_w  = (float)msg.w_;
     }
 
+    void HPoseCallback(CamPoseMsg msg){
+        htrans_x = (float)msg.x;
+        htrans_y = (float)msg.y;
+        htrans_z = (float)msg.z;
+        hquat_x  = (float)msg.x_;
+        hquat_y  = (float)msg.y_;
+        hquat_z  = (float)msg.z_;
+        hquat_w  = (float)msg.w_;
+    }
+
     public void BgrToRgb(byte[] data) {
         for (int i = 0; i < data.Length; i += 3)
         {
@@ -147,8 +164,23 @@ public class CamPoseSubscriber: MonoBehaviour{
 
     void Update(){
 
-        Vector3 trans    = new Vector3(trans_x,trans_y + 0.40f,trans_z + 0.6f);
-        // Vector3 trans    = new Vector3(trans_x,trans_y,trans_z);
+        if (use_headtrack){
+            Vector3 trans    = new Vector3( htrans_x, htrans_y + 1.7f, 1.5f );
+            // Vector3 trans    = new Vector3(trans_x,trans_y,trans_z);
+            Quaternion quat  = new Quaternion(hquat_x,hquat_y,hquat_z,hquat_w);
+            POV.transform.SetPositionAndRotation(trans,quat);
+            New_POV.transform.SetPositionAndRotation(trans,quat);
+            New_POV_1.transform.SetPositionAndRotation(trans,quat);
+            Vector3 lookat_axis = new Vector3(0,1,0);
+            POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
+            New_POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
+            New_POV_1.transform.LookAt(Cube_2_base.transform,lookat_axis); 
+        }
+        else{
+
+        // Vector3 trans    = new Vector3(trans_x -0.37f,trans_y + 0.40f,trans_z + 0.6f);
+        // Vector3 trans    = new Vector3(trans_x,trans_y + 0.40f,trans_z + 0.6f);
+        Vector3 trans    = new Vector3(trans_x,trans_y + 0.40f,1.0f + 0.6f);
         Quaternion quat  = new Quaternion(quat_x,quat_y,quat_z,quat_w);
         POV.transform.SetPositionAndRotation(trans,quat);
         New_POV.transform.SetPositionAndRotation(trans,quat);
@@ -157,11 +189,14 @@ public class CamPoseSubscriber: MonoBehaviour{
         POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
         New_POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
         New_POV_1.transform.LookAt(Cube_2_base.transform,lookat_axis); 
+
+        }
+        
         
         // Quaternion quat_base = Cube_2_base.transform.rotation;
         // Quaternion quat_pov  = POV.transform.rotation;
 
-        Vector3 euler = quat.eulerAngles;
+        // Vector3 euler = quat.eulerAngles;
         // Debug.Log(string.Format("x: {0}, y:{1}, z:{2}",euler[0],euler[1],euler[2]));
 
         // Quaternion rel_quat  = quat_pov * Quaternion.Inverse(quat_base);

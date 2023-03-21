@@ -18,14 +18,14 @@ using System.Collections.Generic;
 public class ImagePublisher: MonoBehaviour{
 
     public Camera _camera; 
-    public Camera _2d_pov; 
-    // public Camera _2d_pov_1; 
+    // public Camera _2d_pov; 
+    public Camera _2d_pov_1; 
 
     ROSConnection ros;
     public ImageMsg imgmsg = new ImageMsg();
     public string CameraTopic1 = "pov_image";
-    public string CameraTopic2 = "pov_plane";
-    // public string CameraTopic3 = "rgb_planes";
+    // public string CameraTopic2 = "pov_plane";
+    public string CameraTopic3 = "rgb_planes";
     public HeaderMsg msg_ = new HeaderMsg();
 
     public float publishMessageFrequency = 0.01f;
@@ -40,17 +40,17 @@ public class ImagePublisher: MonoBehaviour{
     public void Start(){
 
         _camera = GameObject.Find("POV").GetComponent<Camera>();
-        _2d_pov = GameObject.Find("New_POV").GetComponent<Camera>();
-        // _2d_pov_1 = GameObject.Find("New_POV_1").GetComponent<Camera>();
+        // _2d_pov = GameObject.Find("New_POV").GetComponent<Camera>();
+        _2d_pov_1 = GameObject.Find("New_POV_1").GetComponent<Camera>();
         changeCameraParam(_camera);
         // changeCameraParam(_2d_pov);
-        // changeCameraParam(_2d_pov_1);
+        changeCameraParam(_2d_pov_1);
         
         // Initialize ROS connection 
         ros =  ROSConnection.GetOrCreateInstance();
         ros.RegisterPublisher<ImageMsg>(CameraTopic1);
-        ros.RegisterPublisher<ImageMsg>(CameraTopic2);
-        // ros.RegisterPublisher<ImageMsg>(CameraTopic3);
+        // ros.RegisterPublisher<ImageMsg>(CameraTopic2);
+        ros.RegisterPublisher<ImageMsg>(CameraTopic3);
         // _camera.pixelWidth = 1920;
         // _camera.pixelHeight= 1080;
         // Render Texture Initialized
@@ -193,16 +193,22 @@ public class ImagePublisher: MonoBehaviour{
         // if (timeElapsed > publishMessageFrequency){
             // var plane_image  = CaptureImage(_2d_pov );
             var pov_image    = CaptureImage(_camera);
+            var rgb_image    = CaptureImage(_2d_pov_1);
             // var cord  = cropImage(plane_image);
             // Debug.Log(string.Format("x,y : {0}, {1}", cord[0],cord[1]));
             msg_.frame_id = "pov_image";
             ImageMsg imagemsg = pov_image.ToImageMsg(msg_);
             ros.Publish(CameraTopic1, imagemsg);
+
+            msg_.frame_id = "rgb_image";
+            ImageMsg imagemsg1 = rgb_image.ToImageMsg(msg_);
+            ros.Publish(CameraTopic3, imagemsg1);
             // msg_.frame_id = "pov_plane";
             // ImageMsg imagemsg1 = plane_image.ToImageMsg(msg_);
             // ros.Publish(CameraTopic2, imagemsg1);
             // Destroy(plane_image);
             Destroy(pov_image);
+            Destroy(rgb_image);
             // ImageMsg rosmsg1 =  CaptureImage(_camera, "pov_frame");
             // ImageMsg rosmsg2 =  CaptureImage(_2d_pov, "pov_plane");
             // ImageMsg rosmsg3 =  CaptureImage(_2d_pov_1, "rgb_planes");

@@ -25,7 +25,14 @@ public class Teleop: MonoBehaviour{
     public GameObject Cube2 ;
     public GameObject Cube3 ;
     public GameObject Cube4 ;
+    public GameObject Cube1_1 ;
+    public GameObject Cube2_1 ;
+    public GameObject Cube3_1 ;
+    public GameObject Cube4_1 ;
     public GameObject HandL ;
+    private List<GameObject> Objects;
+    private List<GameObject> Objects1;
+
     ROSConnection ros;
     public string teleopTopicName = "obj_pose";
     public string swteleopTopicName = "smartwatch_pose";
@@ -38,10 +45,12 @@ public class Teleop: MonoBehaviour{
     public bool use_spacemouse = true;
     public bool use_speech2text = false;
 
-    public Vector3    init_trans = new Vector3(0.45f, 0.35f, 0.40f);
-    public Quaternion init_quat  = new Quaternion(0,0,0,1);
+    // public Vector3    init_trans = new Vector3(0.45f, 0.35f, 0.30f);
+    private Vector3    init_trans = new Vector3(0.25f, 0.37f, 0.50f);
+    private Vector3    init_trans1 = new Vector3(0.25f, 0.32f, 0.50f);
+    private Quaternion init_quat  = new Quaternion(0,0,0,1);
 
-    public Vector3    FrozenTrans = new Vector3(0.45f, 0.35f, 0.40f);
+    public Vector3    FrozenTrans = new Vector3(0.45f, 0.35f, 0.30f);
     public Quaternion FrozenQuat  = Quaternion.Euler(0,-90,0);
 
     public int obj_id  = 1;
@@ -85,7 +94,6 @@ public class Teleop: MonoBehaviour{
 
     // private float y_max =  0.28f;
     
-    private List<GameObject> Objects;
 
     
     // "hover": 1,
@@ -355,13 +363,41 @@ public class Teleop: MonoBehaviour{
         Cube2       = GameObject.Find("Cube_2");
         Cube3       = GameObject.Find("Cube_3");
         Cube4       = GameObject.Find("Cube_4");
+        Cube1_1     = GameObject.Find("EdgeCube_1");
+        Cube2_1     = GameObject.Find("EdgeCube_2");
+        Cube3_1     = GameObject.Find("EdgeCube_3");
+        Cube4_1     = GameObject.Find("EdgeCube_4");
+
+        // Vector3 local_trans = new Vector3(0f,0.35f,0f);
+        // Quaternion local_quat  = Quaternion.Euler(0f,0f,0f); 
+        // Cube1_1.transform.SetLocalPositionAndRotation(local_trans,local_quat);
+        // Cube2_1.transform.SetLocalPositionAndRotation(local_trans,local_quat);
+        // Cube3_1.transform.SetLocalPositionAndRotation(local_trans,local_quat);
+        // Cube4_1.transform.SetLocalPositionAndRotation(local_trans,local_quat);
+
+        // Cube1_1.transform.SetParent(Cube1.transform);
+        // Cube2_1.transform.SetParent(Cube2.transform);
+        // Cube3_1.transform.SetParent(Cube3.transform);
+        // Cube4_1.transform.SetParent(Cube4.transform);
+
+        // Cube4       = GameObject.Find("Cube5");
+        // GameObject cubencube = GameObject.Find("CubeNCube");
+        // cubencube.transform.SetParent(Cube4.transform);
+        // Cube4.transform.SetChild(GameObject.Find("CubeNCube"));
         HandL       = GameObject.Find("vr_hand_L");
         Objects = new List<GameObject> (){Cube1,Cube2,Cube3,Cube4};
+        Objects1 = new List<GameObject> (){Cube1_1,Cube2_1,Cube3_1,Cube4_1};
         for (int i = 0; i < Objects.Count; ++i){
             InitObj(Objects[i], init_trans, init_quat, false);
-            // init_trans[0] -= 0.2f;
-            init_trans[2] += 0.15f;
+            InitObj(Objects1[i], init_trans1, init_quat, false);
+            Objects1[i].transform.SetParent(Objects[i].transform);
+            ApplyMaterial(Objects1[i],Color.gray);
+            init_trans[0] -= 0.2f;
+            init_trans1[0] -= 0.2f;
+            // init_trans[2] += 0.15f;
         }
+       
+
 
         ApplyMaterial(Cube1,Color.red);
         ApplyMaterial(Cube2,Color.green);
@@ -387,6 +423,7 @@ public class Teleop: MonoBehaviour{
   
     void Update(){      
         Debug.Log(string.Format("Primitive Id: {0}",primitive_id));
-        SpawnObj(HandL);
+        // SpawnObj(HandL);
+        SpawnObj(Objects[2]);
     }
 }
