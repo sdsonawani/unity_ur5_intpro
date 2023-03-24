@@ -25,10 +25,12 @@ public class Teleop: MonoBehaviour{
     public GameObject Cube2 ;
     public GameObject Cube3 ;
     public GameObject Cube4 ;
+    public GameObject Cube5 ;
     public GameObject Cube1_1 ;
     public GameObject Cube2_1 ;
     public GameObject Cube3_1 ;
     public GameObject Cube4_1 ;
+    public GameObject Cube5_1 ;
     public GameObject HandL ;
     private List<GameObject> Objects;
     private List<GameObject> Objects1;
@@ -196,6 +198,10 @@ public class Teleop: MonoBehaviour{
 
             use_smartwatch = false;
             use_spacemouse = false;
+            // Vector3 trans = new Vector3(trans_x,trans_y,trans_z);
+            if (trans_y < 0.37f){
+                trans_y = 0.37f;
+            }
             Vector3 trans = new Vector3(trans_x,trans_y,trans_z);
             Quaternion quat  = new Quaternion(0.0f,0.0f,0.0f,1.0f);
             Obj.transform.SetPositionAndRotation(trans,quat);
@@ -204,7 +210,8 @@ public class Teleop: MonoBehaviour{
             use_opti =false;
             use_spacemouse =false;
           
-            Vector3    trans = new Vector3(swtrans_x,swtrans_y,swtrans_z);
+            Vector3    trans = new Vector3(swtrans_x,0.37f,0.6f);
+            // Vector3    trans = new Vector3(swtrans_x,swtrans_y,swtrans_z);
             Quaternion quat  = new Quaternion(0.0f,0.0f,0.0f,1.0f);
             Obj.transform.SetPositionAndRotation(trans,quat);
 
@@ -363,10 +370,12 @@ public class Teleop: MonoBehaviour{
         Cube2       = GameObject.Find("Cube_2");
         Cube3       = GameObject.Find("Cube_3");
         Cube4       = GameObject.Find("Cube_4");
+        Cube5       = GameObject.Find("Cube_5");
         Cube1_1     = GameObject.Find("EdgeCube_1");
         Cube2_1     = GameObject.Find("EdgeCube_2");
         Cube3_1     = GameObject.Find("EdgeCube_3");
         Cube4_1     = GameObject.Find("EdgeCube_4");
+        Cube5_1     = GameObject.Find("EdgeCube_5");
 
         // Vector3 local_trans = new Vector3(0f,0.35f,0f);
         // Quaternion local_quat  = Quaternion.Euler(0f,0f,0f); 
@@ -385,11 +394,11 @@ public class Teleop: MonoBehaviour{
         // cubencube.transform.SetParent(Cube4.transform);
         // Cube4.transform.SetChild(GameObject.Find("CubeNCube"));
         HandL       = GameObject.Find("vr_hand_L");
-        Objects = new List<GameObject> (){Cube1,Cube2,Cube3,Cube4};
-        Objects1 = new List<GameObject> (){Cube1_1,Cube2_1,Cube3_1,Cube4_1};
+        Objects = new List<GameObject> (){Cube1,Cube2,Cube3,Cube4,Cube5};
+        Objects1 = new List<GameObject> (){Cube1_1,Cube2_1,Cube3_1,Cube4_1,Cube5_1};
         for (int i = 0; i < Objects.Count; ++i){
-            InitObj(Objects[i], init_trans, init_quat, false);
-            InitObj(Objects1[i], init_trans1, init_quat, false);
+            InitObj(Objects[i], init_trans, init_quat, true);
+            InitObj(Objects1[i], init_trans1, init_quat, true);
             Objects1[i].transform.SetParent(Objects[i].transform);
             ApplyMaterial(Objects1[i],Color.gray);
             init_trans[0] -= 0.2f;
@@ -423,7 +432,7 @@ public class Teleop: MonoBehaviour{
   
     void Update(){      
         Debug.Log(string.Format("Primitive Id: {0}",primitive_id));
-        // SpawnObj(HandL);
-        SpawnObj(Objects[2]);
+        SpawnObj(HandL);
+        // SpawnObj(Objects[2]);
     }
 }

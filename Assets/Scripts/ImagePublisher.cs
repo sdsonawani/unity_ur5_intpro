@@ -13,19 +13,24 @@ using System.Collections;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-
+using System.Threading;
 
 public class ImagePublisher: MonoBehaviour{
 
     public Camera _camera; 
+    public Camera _camera_r; 
     // public Camera _2d_pov; 
-    public Camera _2d_pov_1; 
+    // public Camera _2d_pov_1; 
 
     ROSConnection ros;
     public ImageMsg imgmsg = new ImageMsg();
+    public CamPoseMsg posemsg = new CamPoseMsg();
+
     public string CameraTopic1 = "pov_image";
+    public string CamPoseTopic = "pov_unity_pose";
     // public string CameraTopic2 = "pov_plane";
     public string CameraTopic3 = "rgb_planes";
+    public string CameraTopic4 = "pov_image_right";
     public HeaderMsg msg_ = new HeaderMsg();
 
     public float publishMessageFrequency = 0.01f;
@@ -37,25 +42,39 @@ public class ImagePublisher: MonoBehaviour{
     public int Pwdith = 1920;
     public int Pheight = 1080;
     public float fov = 75f;
+    public string render_layer;
+
+
+
+
+
     public void Start(){
 
         _camera = GameObject.Find("POV").GetComponent<Camera>();
-        // _2d_pov = GameObject.Find("New_POV").GetComponent<Camera>();
-        _2d_pov_1 = GameObject.Find("New_POV_1").GetComponent<Camera>();
         changeCameraParam(_camera);
+
+        _camera_r = GameObject.Find("POV_1").GetComponent<Camera>();
+        _camera_r.transform.SetParent(_camera.transform);
+        Vector3 shift_r  = new Vector3(0.05f, 0.0f, 0.0f);
+        _camera_r.transform.SetLocalPositionAndRotation(shift_r,Quaternion.Euler(0,0,0));
+        // _2d_pov = GameObject.Find("New_POV").GetComponent<Camera>();
+        // _2d_pov_1 = GameObject.Find("New_POV_1").GetComponent<Camera>();
+        // changeCameraParam(_camera_r);
         // changeCameraParam(_2d_pov);
-        changeCameraParam(_2d_pov_1);
+        // changeCameraParam(_2d_pov_1);
         
         // Initialize ROS connection 
         ros =  ROSConnection.GetOrCreateInstance();
         ros.RegisterPublisher<ImageMsg>(CameraTopic1);
         // ros.RegisterPublisher<ImageMsg>(CameraTopic2);
         ros.RegisterPublisher<ImageMsg>(CameraTopic3);
+        ros.RegisterPublisher<ImageMsg>(CameraTopic4);
+        ros.RegisterPublisher<CamPoseMsg>(CamPoseTopic);
         // _camera.pixelWidth = 1920;
         // _camera.pixelHeight= 1080;
         // Render Texture Initialized
         // renderTexture = new RenderTexture(_camera.pixelWidth, _camera.pixelHeight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB);
-        renderTexture      = new RenderTexture(Pwdith, Pheight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8_UNorm);
+        renderTexture      = new RenderTexture(Pwdith, Pheight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8_UInt);
         renderTexture.Create();
         _camera.clearFlags = CameraClearFlags.SolidColor;
     }
@@ -146,17 +165,6 @@ public class ImagePublisher: MonoBehaviour{
         return pov_texture;
     }
 
-
-    public void BgrToRgb(byte[] data) {
-        for (int i = 0; i < data.Length; i += 3)
-        {
-            byte dummy = data[i];
-            data[i] = data[i + 2];
-            data[i + 2] = dummy;
-        }
-    }
-
-
     public List<int> cropImage(Texture2D image){
         
         List<int> cord = new List<int> ();
@@ -187,35 +195,58 @@ public class ImagePublisher: MonoBehaviour{
         return cord;
     }
 
+    public void Publish_1(){
+        string topic_name = CameraTopic1;
+        var image    = CaptureImage(_camera);
+        HeaderMsg msg = new HeaderMsg();
+        msg.frame_id = topic_name;
+        ImageMsg imgmsg  = image.ToImageMsg(msg);
+        ros.Publish(topic_name, imgmsg);
+        Destroy(image);
+    }
+
+    public void Publish_2(){
+        string topic_name = CameraTopic3;
+        var image    = CaptureImage(_camera);
+        // Debug.Log(string.Format("texture dimension: {0}",image.width));
+
+        HeaderMsg msg = new HeaderMsg();
+        msg.frame_id = topic_name;
+        ImageMsg imgmsg  = image.ToImageMsg(msg);
+
+
+        ros.Publish(topic_name, imgmsg);
+        Destroy(image);
+    }
+
+    public void Publish_3(){
+        string topic_name = CameraTopic4;
+        var image    = CaptureImage(_camera_r);
+        HeaderMsg msg = new HeaderMsg();
+        msg.frame_id = topic_name;
+        ImageMsg imgmsg  = image.ToImageMsg(msg);
+        ros.Publish(topic_name, imgmsg);
+        Destroy(image);
+    }
+
 
     public void Update(){        
-        // timeElapsed += Time.deltaTime;
-        // if (timeElapsed > publishMessageFrequency){
-            // var plane_image  = CaptureImage(_2d_pov );
-            var pov_image    = CaptureImage(_camera);
-            var rgb_image    = CaptureImage(_2d_pov_1);
-            // var cord  = cropImage(plane_image);
-            // Debug.Log(string.Format("x,y : {0}, {1}", cord[0],cord[1]));
-            msg_.frame_id = "pov_image";
-            ImageMsg imagemsg = pov_image.ToImageMsg(msg_);
-            ros.Publish(CameraTopic1, imagemsg);
 
-            msg_.frame_id = "rgb_image";
-            ImageMsg imagemsg1 = rgb_image.ToImageMsg(msg_);
-            ros.Publish(CameraTopic3, imagemsg1);
-            // msg_.frame_id = "pov_plane";
-            // ImageMsg imagemsg1 = plane_image.ToImageMsg(msg_);
-            // ros.Publish(CameraTopic2, imagemsg1);
-            // Destroy(plane_image);
-            Destroy(pov_image);
-            Destroy(rgb_image);
-            // ImageMsg rosmsg1 =  CaptureImage(_camera, "pov_frame");
-            // ImageMsg rosmsg2 =  CaptureImage(_2d_pov, "pov_plane");
-            // ImageMsg rosmsg3 =  CaptureImage(_2d_pov_1, "rgb_planes");
-            // ros.Publish(CameraTopic1, rosmsg1);
-            // ros.Publish(CameraTopic2, rosmsg2);
-            // ros.Publish(CameraTopic3, rosmsg3);
-        //     timeElapsed = 0;
-        // }
+            _camera.cullingMask = LayerMask.GetMask("render_layer_1");
+            Publish_1();
+
+            _camera.cullingMask = LayerMask.GetMask("render_layer_3");
+            Publish_2();
+
+            // _camera_r.cullingMask = LayerMask.GetMask("render_layer_1");
+            // Publish_3();
+
+            
+            Vector3 trans = _camera.transform.position;
+            // Quaternion quat = _camera.transform.rotation;
+            posemsg.x = trans[0];
+            posemsg.y = trans[1];
+            posemsg.z = trans[2];
+            ros.Publish(CamPoseTopic,posemsg);
     }
 }

@@ -25,8 +25,8 @@ public class CamPoseSubscriber: MonoBehaviour{
     public GameObject Cube_2_basec4;
 
     public Camera POV = new Camera();
-    public Camera New_POV = new Camera();
-    public Camera New_POV_1 = new Camera();
+    // public Camera New_POV = new Camera();
+    // public Camera New_POV_1 = new Camera();
 
     public float table_x = 0.0f;
     public float table_y = 0.30f;
@@ -91,8 +91,8 @@ public class CamPoseSubscriber: MonoBehaviour{
         
     
         POV       = GameObject.Find("POV").GetComponent<Camera>();
-        New_POV   = GameObject.Find("New_POV").GetComponent<Camera>();
-        New_POV_1 = GameObject.Find("New_POV_1").GetComponent<Camera>();
+        // New_POV   = GameObject.Find("New_POV").GetComponent<Camera>();
+        // New_POV_1 = GameObject.Find("New_POV_1").GetComponent<Camera>();
 
         ros =  ROSConnection.GetOrCreateInstance();
         ros.Subscribe<CamPoseMsg>(topicName, PoseCallback);
@@ -169,26 +169,26 @@ public class CamPoseSubscriber: MonoBehaviour{
             // Vector3 trans    = new Vector3(trans_x,trans_y,trans_z);
             Quaternion quat  = new Quaternion(hquat_x,hquat_y,hquat_z,hquat_w);
             POV.transform.SetPositionAndRotation(trans,quat);
-            New_POV.transform.SetPositionAndRotation(trans,quat);
-            New_POV_1.transform.SetPositionAndRotation(trans,quat);
+            // New_POV.transform.SetPositionAndRotation(trans,quat);
+            // New_POV_1.transform.SetPositionAndRotation(trans,quat);
             Vector3 lookat_axis = new Vector3(0,1,0);
             POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
-            New_POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
-            New_POV_1.transform.LookAt(Cube_2_base.transform,lookat_axis); 
+            // New_POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
+            // New_POV_1.transform.LookAt(Cube_2_base.transform,lookat_axis); 
         }
         else{
 
         // Vector3 trans    = new Vector3(trans_x -0.37f,trans_y + 0.40f,trans_z + 0.6f);
-        // Vector3 trans    = new Vector3(trans_x,trans_y + 0.40f,trans_z + 0.6f);
-        Vector3 trans    = new Vector3(trans_x,trans_y + 0.40f,1.0f + 0.6f);
+        Vector3 trans    = new Vector3(trans_x,trans_y + 0.40f,trans_z + 0.6f);
+        // Vector3 trans    = new Vector3(trans_x,trans_y + 0.40f,1.0f + 0.6f);
         Quaternion quat  = new Quaternion(quat_x,quat_y,quat_z,quat_w);
         POV.transform.SetPositionAndRotation(trans,quat);
-        New_POV.transform.SetPositionAndRotation(trans,quat);
-        New_POV_1.transform.SetPositionAndRotation(trans,quat);
+        // New_POV.transform.SetPositionAndRotation(trans,quat);
+        // New_POV_1.transform.SetPositionAndRotation(trans,quat);
         Vector3 lookat_axis = new Vector3(0,1,0);
         POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
-        New_POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
-        New_POV_1.transform.LookAt(Cube_2_base.transform,lookat_axis); 
+        // New_POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
+        // New_POV_1.transform.LookAt(Cube_2_base.transform,lookat_axis); 
 
         }
         
