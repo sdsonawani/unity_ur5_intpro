@@ -208,7 +208,7 @@ public class ImagePublisher: MonoBehaviour{
     public void Publish_2(){
         string topic_name = CameraTopic3;
         var image    = CaptureImage(_camera);
-        // Debug.Log(string.Format("texture dimension: {0}",image.width));
+        Debug.Log(string.Format("texture dimension: {0}",image.width));
 
         HeaderMsg msg = new HeaderMsg();
         msg.frame_id = topic_name;

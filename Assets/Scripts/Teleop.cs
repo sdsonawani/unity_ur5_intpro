@@ -26,6 +26,13 @@ public class Teleop: MonoBehaviour{
     public GameObject Cube3 ;
     public GameObject Cube4 ;
     public GameObject Cube5 ;
+
+    public GameObject Cube1_shadow ;
+    public GameObject Cube2_shadow ;
+    public GameObject Cube3_shadow ;
+    public GameObject Cube4_shadow ;
+    public GameObject Cube5_shadow ;
+
     public GameObject Cube1_1 ;
     public GameObject Cube2_1 ;
     public GameObject Cube3_1 ;
@@ -376,6 +383,13 @@ public class Teleop: MonoBehaviour{
         Cube3_1     = GameObject.Find("EdgeCube_3");
         Cube4_1     = GameObject.Find("EdgeCube_4");
         Cube5_1     = GameObject.Find("EdgeCube_5");
+
+        Cube1_shadow  = GameObject.Find("Cube_1_shadow");
+        Cube2_shadow  = GameObject.Find("Cube_2_shadow");
+        Cube3_shadow  = GameObject.Find("Cube_3_shadow");
+        Cube4_shadow  = GameObject.Find("Cube_4_shadow");
+        Cube5_shadow  = GameObject.Find("Cube_5_shadow");
+
 
         // Vector3 local_trans = new Vector3(0f,0.35f,0f);
         // Quaternion local_quat  = Quaternion.Euler(0f,0f,0f); 
