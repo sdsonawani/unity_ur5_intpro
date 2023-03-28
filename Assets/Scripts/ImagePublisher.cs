@@ -22,6 +22,7 @@ public class ImagePublisher: MonoBehaviour{
     // public Camera _2d_pov; 
     // public Camera _2d_pov_1; 
 
+    public GameObject target;
     ROSConnection ros;
     public ImageMsg imgmsg = new ImageMsg();
     public CamPoseMsg posemsg = new CamPoseMsg();
@@ -52,11 +53,15 @@ public class ImagePublisher: MonoBehaviour{
 
         _camera = GameObject.Find("POV").GetComponent<Camera>();
         changeCameraParam(_camera);
+        Pwdith  = _camera.pixelWidth;
+        Pheight = _camera.pixelHeight;
+        // target  =  GameObject.Find("Base_Plate");
+        target  =  GameObject.Find("Base_Plate_c1");
 
-        _camera_r = GameObject.Find("POV_1").GetComponent<Camera>();
-        _camera_r.transform.SetParent(_camera.transform);
-        Vector3 shift_r  = new Vector3(0.05f, 0.0f, 0.0f);
-        _camera_r.transform.SetLocalPositionAndRotation(shift_r,Quaternion.Euler(0,0,0));
+        // _camera_r = GameObject.Find("POV_1").GetComponent<Camera>();
+        // _camera_r.transform.SetParent(_camera.transform);
+        // Vector3 shift_r  = new Vector3(0.05f, 0.0f, 0.0f);
+        // _camera_r.transform.SetLocalPositionAndRotation(shift_r,Quaternion.Euler(0,0,0));
         // _2d_pov = GameObject.Find("New_POV").GetComponent<Camera>();
         // _2d_pov_1 = GameObject.Find("New_POV_1").GetComponent<Camera>();
         // changeCameraParam(_camera_r);
@@ -73,8 +78,9 @@ public class ImagePublisher: MonoBehaviour{
         // _camera.pixelWidth = 1920;
         // _camera.pixelHeight= 1080;
         // Render Texture Initialized
-        // renderTexture = new RenderTexture(_camera.pixelWidth, _camera.pixelHeight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB);
-        renderTexture      = new RenderTexture(Pwdith, Pheight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8_UInt);
+        renderTexture = new RenderTexture(Pwdith, Pheight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB);
+        // renderTexture = new RenderTexture(Pwdith, Pheight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB);
+        // renderTexture      = new RenderTexture(Pwdith, Pheight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8_UInt);
         renderTexture.Create();
         _camera.clearFlags = CameraClearFlags.SolidColor;
     }
@@ -233,6 +239,9 @@ public class ImagePublisher: MonoBehaviour{
     public void Update(){        
 
             _camera.cullingMask = LayerMask.GetMask("render_layer_1");
+            Vector3 screenPos = _camera.WorldToScreenPoint(target.transform.position);
+            // Debug.Log("target is " + screenPos.x + " pixels from the left");
+            Debug.Log(string.Format("x: {0}, y: {1}, z: {2}",screenPos.x,screenPos.y,screenPos.z));
             Publish_1();
 
             _camera.cullingMask = LayerMask.GetMask("render_layer_3");

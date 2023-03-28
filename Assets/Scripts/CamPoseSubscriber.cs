@@ -9,7 +9,8 @@ using Unity.Robotics.UrdfImporter.Control;
 using RosMessageTypes.Sensor;
 using RosMessageTypes.Std;
 using System;
-
+using System.Collections;
+using System.Collections.Generic;
 
 
 public class CamPoseSubscriber: MonoBehaviour{
@@ -25,7 +26,7 @@ public class CamPoseSubscriber: MonoBehaviour{
     public GameObject Cube_2_basec4;
 
     public Camera POV = new Camera();
-    // public Camera New_POV = new Camera();
+    public Camera New_POV = new Camera();
     // public Camera New_POV_1 = new Camera();
 
     public float table_x = 0.0f;
@@ -38,6 +39,7 @@ public class CamPoseSubscriber: MonoBehaviour{
     ROSConnection ros;
     public string topicName = "pov_pose";
     public string htopicName = "human_pose";
+    public string imageAndSrcmatTopic = "image_and_src_mat";
     public float trans_x,trans_y,trans_z;
     public float quat_w,quat_x,quat_y,quat_z;
 
@@ -48,6 +50,11 @@ public class CamPoseSubscriber: MonoBehaviour{
     public HeaderMsg msg_ = new HeaderMsg();
     Camera cam;
     public Shader shade;
+    public RenderTexture renderTexture;
+    public int Pwdith  = 1920;
+    public int Pheight = 1080;
+
+    private List<GameObject> objects;
 
     void ApplyMaterial(GameObject obj, Color color){
         Material mat = obj.GetComponent<Renderer>().material;
@@ -78,9 +85,8 @@ public class CamPoseSubscriber: MonoBehaviour{
         Cube_2_basec2 = GameObject.Find("Base_Plate_c2");
         Cube_2_basec3 = GameObject.Find("Base_Plate_c3");
         Cube_2_basec4 = GameObject.Find("Base_Plate_c4");
-        
+        objects =  new List<GameObject> (){Cube_2_basec1, Cube_2_basec4, Cube_2_basec3, Cube_2_basec2 };
         shade = Shader.Find("Unlit/Color");
-       
         Color customColor = new Color(0.4f, 0.9f, 0.7f, 1.0f);
         Color new_color   = new Color(1f, 1f, 1f, 1.0f);
         ApplyMaterial(Cube_2_base   , new_color);
@@ -91,13 +97,18 @@ public class CamPoseSubscriber: MonoBehaviour{
         
     
         POV       = GameObject.Find("POV").GetComponent<Camera>();
-        // New_POV   = GameObject.Find("New_POV").GetComponent<Camera>();
+        New_POV   = GameObject.Find("POV_1").GetComponent<Camera>();
         // New_POV_1 = GameObject.Find("New_POV_1").GetComponent<Camera>();
+        Pwdith  = POV.pixelWidth;
+        Pheight = POV.pixelHeight;
+        POV.clearFlags = CameraClearFlags.SolidColor;
+
 
         ros =  ROSConnection.GetOrCreateInstance();
         ros.Subscribe<CamPoseMsg>(topicName, PoseCallback);
         ros.Subscribe<CamPoseMsg>(htopicName, HPoseCallback);
         ros.RegisterPublisher<CamPoseMsg>("pov_rel_pose");
+        ros.RegisterPublisher<ImageSrcMatMsg>(imageAndSrcmatTopic);
 
 
         // Base Plane
@@ -130,8 +141,15 @@ public class CamPoseSubscriber: MonoBehaviour{
         Vector3 cube2_trans = new Vector3(-(table_x + 0.2f),  (table_y + cube_height), table_z);
         Quaternion cube2_quat = Quaternion.Euler(0, 0, 0);
         ApplyPRAndCollision(Cube_2, cube2_trans, cube2_quat);
+
+         renderTexture = new RenderTexture(Pwdith, Pheight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB);
+        // renderTexture = new RenderTexture(Pwdith, Pheight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB);
+        // renderTexture      = new RenderTexture(Pwdith, Pheight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8_UInt);
+        renderTexture.Create();
     
     }
+
+
 
     void PoseCallback(CamPoseMsg msg){
         trans_x = (float)msg.x;
@@ -162,6 +180,43 @@ public class CamPoseSubscriber: MonoBehaviour{
         }
     }
 
+
+    public void publish_imageNsrcmat(){
+        // POV.cullingMask = LayerMask.GetMask("render_layer_1");
+        
+        double[] xs = new double[4];
+        double[] ys = new double[4];
+        for (int i = 0; i < 4; i++){
+            Vector3 screenPos = POV.WorldToScreenPoint(objects[i].transform.position);
+            xs[i] = (double)screenPos.x;
+            ys[i] = (double)screenPos.y;
+        }
+        var image = CaptureImage(POV);
+        HeaderMsg msg = new HeaderMsg();
+        msg.frame_id = "image_and_src_mat";
+        ImageMsg imgmsg  = image.ToImageMsg(msg);
+        ImageSrcMatMsg img_src_mat_msg  = new ImageSrcMatMsg();
+        img_src_mat_msg.Image = imgmsg;
+        img_src_mat_msg.x = xs;
+        img_src_mat_msg.y = ys;
+        ros.Publish(imageAndSrcmatTopic, img_src_mat_msg);
+        Destroy(image);
+    }
+
+    public Texture2D CaptureImage(Camera cam){
+        cam.backgroundColor = Color.black;
+        cam.targetTexture = renderTexture;
+        RenderTexture currentRT = RenderTexture.active;
+        RenderTexture.active = renderTexture;
+        cam.Render();
+        Texture2D pov_texture = new Texture2D(Pwdith, Pheight);
+        pov_texture.ReadPixels(new Rect(0, 0, Pwdith, Pheight), 0, 0);
+        pov_texture.Apply();
+        RenderTexture.active = currentRT;
+        cam.targetTexture = null;
+        return pov_texture;
+    }
+
     void Update(){
 
         if (use_headtrack){
@@ -169,29 +224,30 @@ public class CamPoseSubscriber: MonoBehaviour{
             // Vector3 trans    = new Vector3(trans_x,trans_y,trans_z);
             Quaternion quat  = new Quaternion(hquat_x,hquat_y,hquat_z,hquat_w);
             POV.transform.SetPositionAndRotation(trans,quat);
-            // New_POV.transform.SetPositionAndRotation(trans,quat);
+            New_POV.transform.SetPositionAndRotation(trans,quat);
             // New_POV_1.transform.SetPositionAndRotation(trans,quat);
             Vector3 lookat_axis = new Vector3(0,1,0);
-            POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
-            // New_POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
+            // POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
+            New_POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
             // New_POV_1.transform.LookAt(Cube_2_base.transform,lookat_axis); 
         }
         else{
 
         // Vector3 trans    = new Vector3(trans_x -0.37f,trans_y + 0.40f,trans_z + 0.6f);
-        Vector3 trans    = new Vector3(trans_x,trans_y + 0.40f,trans_z + 0.6f);
+        Vector3 trans    = new Vector3(trans_x, trans_y + 0.6f,trans_z + 0.6f);
         // Vector3 trans    = new Vector3(trans_x,trans_y + 0.40f,1.0f + 0.6f);
         Quaternion quat  = new Quaternion(quat_x,quat_y,quat_z,quat_w);
         POV.transform.SetPositionAndRotation(trans,quat);
-        // New_POV.transform.SetPositionAndRotation(trans,quat);
+        New_POV.transform.SetPositionAndRotation(trans,quat);
         // New_POV_1.transform.SetPositionAndRotation(trans,quat);
         Vector3 lookat_axis = new Vector3(0,1,0);
         POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
-        // New_POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
+        New_POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
         // New_POV_1.transform.LookAt(Cube_2_base.transform,lookat_axis); 
 
         }
         
+        publish_imageNsrcmat();
         
         // Quaternion quat_base = Cube_2_base.transform.rotation;
         // Quaternion quat_pov  = POV.transform.rotation;

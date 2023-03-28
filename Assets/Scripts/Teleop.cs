@@ -10,7 +10,6 @@ using Unity.Robotics.UrdfImporter.Control;
 using RosMessageTypes.Sensor;
 using RosMessageTypes.Std;
 using System;
-using System.Collections;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
@@ -41,6 +40,7 @@ public class Teleop: MonoBehaviour{
     public GameObject HandL ;
     private List<GameObject> Objects;
     private List<GameObject> Objects1;
+    private List<GameObject> Objects2;
 
     ROSConnection ros;
     public string teleopTopicName = "obj_pose";
@@ -55,8 +55,9 @@ public class Teleop: MonoBehaviour{
     public bool use_speech2text = false;
 
     // public Vector3    init_trans = new Vector3(0.45f, 0.35f, 0.30f);
-    private Vector3    init_trans = new Vector3(0.25f, 0.37f, 0.50f);
-    private Vector3    init_trans1 = new Vector3(0.25f, 0.32f, 0.50f);
+    private Vector3    init_trans  = new Vector3(0.35f, 0.37f, 0.50f);
+    private Vector3    init_trans1 = new Vector3(0.35f, 0.32f, 0.50f);
+    private Vector3    init_trans2 = new Vector3(0.35f, 0.30f, 0.50f);
     private Quaternion init_quat  = new Quaternion(0,0,0,1);
 
     public Vector3    FrozenTrans = new Vector3(0.45f, 0.35f, 0.30f);
@@ -102,9 +103,9 @@ public class Teleop: MonoBehaviour{
     private bool smrbutton = false;
 
     // private float y_max =  0.28f;
-    
-
-    
+    private float delta_steps = 0.01f;
+    private float original_size = 0.05f;
+    public float delta_adjust = 0.01f;
     // "hover": 1,
     // "select": 2,
     // "translate": 3,
@@ -234,12 +235,15 @@ public class Teleop: MonoBehaviour{
             // "release": 5
             if (primitive_id == 1){
                 HoverSelect(0.05f);
+                // Debug.Log("Resetting hand orientation....");
+                // HandL.transform.Rotate(0,-90,0);
             }
 
             if ((primitive_id == 2) && (select_obj_id < Objects.Count)){
 
                 Objects[select_obj_id].transform.SetParent(HandL.transform);
                 primitive_id = 3;
+                Destroy(Objects[select_obj_id].GetComponent<Rigidbody>());
                 
 
             }
@@ -247,6 +251,7 @@ public class Teleop: MonoBehaviour{
             if ((primitive_id == 5) && (select_obj_id < Objects.Count)){
 
                Objects[select_obj_id].transform.SetParent(null);
+               Objects[select_obj_id].AddComponent<Rigidbody>();
                primitive_id = 0;
             }
 
@@ -255,6 +260,9 @@ public class Teleop: MonoBehaviour{
                 smtrans_x =ConditionalMotion(smtrans_x, dsmtrans_x, 0.8f);
                 smtrans_y =ConditionalMotion(smtrans_y, dsmtrans_y, 0.8f);
                 smtrans_z =ConditionalMotion(smtrans_z, dsmtrans_z, 0.8f);
+                if(smtrans_y < 0.35f){
+                    smtrans_y = 0.35f;
+                }
                 Vector3 trans = new Vector3(smtrans_x, smtrans_y, smtrans_z);
                 Quaternion quat  = Quaternion.Euler(-smyaw,smpitch,-smroll);
                 Obj.transform.SetPositionAndRotation(trans,quat);
@@ -272,6 +280,7 @@ public class Teleop: MonoBehaviour{
             Debug.Log(string.Format("Primitive name: {0}",primitives[primitive_id]));
             ros.Publish(unityPrimitiveName,msg);
         }
+    Moving_and_Scaling_Shadow();
     }
     
 
@@ -302,7 +311,7 @@ public class Teleop: MonoBehaviour{
         Vector3 c_trans = HandL.transform.position;
         List<float> errors = new List<float> ();
 
-        for (int i = 0; i < Objects.Count; i++){
+        for (int i = 0; i < Objects.Count; ++i){
             Vector3 object_trans  = Objects[i].transform.position;
             Vector3 error = new Vector3((c_trans.x - object_trans.x),
                                         (0.0f),
@@ -331,20 +340,19 @@ public class Teleop: MonoBehaviour{
             select_obj_id = min_idx;
             Vector3 move = new Vector3(Objects[min_idx].transform.position.x, hover_disp, Objects[min_idx].transform.position.z);
             Objects[min_idx].transform.SetPositionAndRotation(move, Quaternion.Euler(0,0,0));
-        }
-        else{
+            }
+        else {
             hover_disp -= 0.01f;
             if (hover_disp < 0.35f){
                 hover_disp = 0.35f;
             }
-            for (int idx = 0 ; idx < Objects.Count; idx++){
-                if ((Objects[idx].transform.position.y > 0.35f) && (Objects[idx].transform.position.y <= hover_disp_max)){
-                    Vector3 move = new Vector3(Objects[idx].transform.position.x, hover_disp, Objects[idx].transform.position.z);
-                    Objects[idx].transform.SetPositionAndRotation(move, Quaternion.Euler(0,0,0));
-                }
-            }
-            
         }
+        // for (int idx = 0 ; idx < Objects.Count; ++idx){
+        //         if ((Objects[idx].transform.position.y >= 0.35f) && (Objects[idx].transform.position.y <= hover_disp_max)){
+        //             Vector3 move = new Vector3(Objects[idx].transform.position.x, hover_disp, Objects[idx].transform.position.z);
+        //             Objects[idx].transform.SetPositionAndRotation(move, Quaternion.Euler(0,0,0));
+        //         }
+        //     } 
     }
 
 
@@ -370,6 +378,19 @@ public class Teleop: MonoBehaviour{
         }
     }
 
+    void Moving_and_Scaling_Shadow(){
+        for (int i = 0 ; i < Objects2.Count; i++){
+                var parent_y = Objects[i].transform.position[1];
+                var child_y = Objects2[i].transform.position[1];
+                var delta = (parent_y - child_y);
+                Debug.Log(string.Format("Delta distance in meter: {0}",delta));
+                if (delta>0){
+                    Objects2[i].transform.localScale = new Vector3((float) (original_size - delta_adjust * delta), 0.001f, (float) (original_size - delta_adjust * delta));
+                    Objects2[i].transform.SetPositionAndRotation(new Vector3(Objects[i].transform.position[0], 0.325f, Objects[i].transform.position[2]),
+                                                                    Quaternion.Euler(0,0,0));
+                }
+        }
+    }
 
 
     void Start(){
@@ -410,13 +431,18 @@ public class Teleop: MonoBehaviour{
         HandL       = GameObject.Find("vr_hand_L");
         Objects = new List<GameObject> (){Cube1,Cube2,Cube3,Cube4,Cube5};
         Objects1 = new List<GameObject> (){Cube1_1,Cube2_1,Cube3_1,Cube4_1,Cube5_1};
+        Objects2 = new List<GameObject> (){Cube1_shadow,Cube2_shadow,Cube3_shadow,Cube4_shadow,Cube5_shadow};
         for (int i = 0; i < Objects.Count; ++i){
             InitObj(Objects[i], init_trans, init_quat, true);
             InitObj(Objects1[i], init_trans1, init_quat, true);
+            InitObj(Objects2[i], init_trans1, init_quat, false);
             Objects1[i].transform.SetParent(Objects[i].transform);
+            // Objects2[i].transform.SetParent(Objects[i].transform);
             ApplyMaterial(Objects1[i],Color.gray);
-            init_trans[0] -= 0.2f;
+            ApplyMaterial(Objects2[i],Color.gray);
+            init_trans[0]  -= 0.2f;
             init_trans1[0] -= 0.2f;
+            init_trans2[0] -= 0.2f;
             // init_trans[2] += 0.15f;
         }
        
@@ -434,6 +460,7 @@ public class Teleop: MonoBehaviour{
         ros.Subscribe<PrimitiveMsg>(primitveTopicName, PrimitiveIdCallback);
         ros.RegisterPublisher<StringMsg>(unityPrimitiveName);
         Thread t1   = new Thread(new ThreadStart(SpaceMousePrimitiveChange));
+        // Thread t2   = new Thread(new ThreadStart(Moving_and_Scaling_Shadow));
         // Thread t2  = new Thread(new ThreadStart(Select));
         t1.Start();
         // t2.Start();
@@ -446,7 +473,7 @@ public class Teleop: MonoBehaviour{
   
     void Update(){      
         Debug.Log(string.Format("Primitive Id: {0}",primitive_id));
-        SpawnObj(HandL);
-        // SpawnObj(Objects[2]);
+        // SpawnObj(HandL);
+        SpawnObj(Objects[0]);
     }
 }

@@ -31,8 +31,8 @@ public class FramePublisher: MonoBehaviour{
     public float fov = 75f;
     public void Start(){
 
-        _2d_pov = GameObject.Find("New_POV_1").GetComponent<Camera>();
-        changeCameraParam(_2d_pov);
+        _2d_pov = GameObject.Find("POV_1").GetComponent<Camera>();
+        // changeCameraParam(_2d_pov);
         
         // Initialize ROS connection 
         ros =  ROSConnection.GetOrCreateInstance();
@@ -41,7 +41,7 @@ public class FramePublisher: MonoBehaviour{
         // _camera.pixelHeight= 1080;
         // Render Texture Initialized
         // renderTexture = new RenderTexture(_camera.pixelWidth, _camera.pixelHeight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB);
-        renderTexture = new RenderTexture(Pwdith, Pheight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB);
+        renderTexture = new RenderTexture(_2d_pov.pixelWidth, _2d_pov.pixelHeight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB);
         renderTexture.Create();
     }
 
@@ -129,6 +129,7 @@ public class FramePublisher: MonoBehaviour{
     public void Update(){        
         // timeElapsed += Time.deltaTime;
         // if (timeElapsed > publishMessageFrequency){
+
             ImageMsg rosmsg1=  CaptureImage(_2d_pov, "rgb_planes");
             ros.Publish(CameraTopic1, rosmsg1);
     }

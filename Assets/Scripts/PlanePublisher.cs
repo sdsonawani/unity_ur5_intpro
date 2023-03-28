@@ -18,7 +18,7 @@ public class PlanePublisher: MonoBehaviour{
 
     ROSConnection ros;
     public ImageMsg imgmsg = new ImageMsg();
-    public string CameraTopic1 = "pov_plane";
+    public string CameraTopic1 = "rgb_planes";
     public HeaderMsg msg_ = new HeaderMsg();
 
     public float publishMessageFrequency = 0.01f;
@@ -31,7 +31,8 @@ public class PlanePublisher: MonoBehaviour{
     public float fov = 75f;
     public void Start(){
 
-        _2d_pov = GameObject.Find("New_POV").GetComponent<Camera>();
+        _2d_pov = GameObject.Find("POV").GetComponent<Camera>();
+        // _2d_pov = GameObject.Find("New_POV").GetComponent<Camera>();
         changeCameraParam(_2d_pov);
         
         // Initialize ROS connection 
