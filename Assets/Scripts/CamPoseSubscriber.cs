@@ -54,6 +54,7 @@ public class CamPoseSubscriber: MonoBehaviour{
     public int Pwdith  = 1920;
     public int Pheight = 1080;
 
+        
     private List<GameObject> objects;
 
     void ApplyMaterial(GameObject obj, Color color){
@@ -97,7 +98,7 @@ public class CamPoseSubscriber: MonoBehaviour{
         
     
         POV       = GameObject.Find("POV").GetComponent<Camera>();
-        New_POV   = GameObject.Find("POV_1").GetComponent<Camera>();
+        // New_POV   = GameObject.Find("POV_1").GetComponent<Camera>();
         // New_POV_1 = GameObject.Find("New_POV_1").GetComponent<Camera>();
         Pwdith  = POV.pixelWidth;
         Pheight = POV.pixelHeight;
@@ -142,7 +143,8 @@ public class CamPoseSubscriber: MonoBehaviour{
         Quaternion cube2_quat = Quaternion.Euler(0, 0, 0);
         ApplyPRAndCollision(Cube_2, cube2_trans, cube2_quat);
 
-         renderTexture = new RenderTexture(Pwdith, Pheight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB);
+        renderTexture = new RenderTexture(Pwdith, Pheight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8_UNorm);
+        //  renderTexture = new RenderTexture(Pwdith, Pheight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB);
         // renderTexture = new RenderTexture(Pwdith, Pheight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB);
         // renderTexture      = new RenderTexture(Pwdith, Pheight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8_UInt);
         renderTexture.Create();
@@ -209,11 +211,15 @@ public class CamPoseSubscriber: MonoBehaviour{
         RenderTexture currentRT = RenderTexture.active;
         RenderTexture.active = renderTexture;
         cam.Render();
-        Texture2D pov_texture = new Texture2D(Pwdith, Pheight);
+        // Texture2D pov_texture = new Texture2D(Pwdith, Pheight) ;
+        Texture2D pov_texture = new Texture2D(Pwdith, Pheight, TextureFormat.RGB24, false) ;
         pov_texture.ReadPixels(new Rect(0, 0, Pwdith, Pheight), 0, 0);
         pov_texture.Apply();
         RenderTexture.active = currentRT;
+        renderTexture.Release();
         cam.targetTexture = null;
+        // Debug.Log(string.Format("format: {0}",pov_texture.format));
+
         return pov_texture;
     }
 
@@ -224,25 +230,25 @@ public class CamPoseSubscriber: MonoBehaviour{
             // Vector3 trans    = new Vector3(trans_x,trans_y,trans_z);
             Quaternion quat  = new Quaternion(hquat_x,hquat_y,hquat_z,hquat_w);
             POV.transform.SetPositionAndRotation(trans,quat);
-            New_POV.transform.SetPositionAndRotation(trans,quat);
+            // New_POV.transform.SetPositionAndRotation(trans,quat);
             // New_POV_1.transform.SetPositionAndRotation(trans,quat);
             Vector3 lookat_axis = new Vector3(0,1,0);
             // POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
-            New_POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
+            // New_POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
             // New_POV_1.transform.LookAt(Cube_2_base.transform,lookat_axis); 
         }
         else{
 
         // Vector3 trans    = new Vector3(trans_x -0.37f,trans_y + 0.40f,trans_z + 0.6f);
-        Vector3 trans    = new Vector3(trans_x, trans_y + 0.6f,trans_z + 0.6f);
+        Vector3 trans    = new Vector3(trans_x, trans_y + 0.35f,trans_z + 0.20f);
         // Vector3 trans    = new Vector3(trans_x,trans_y + 0.40f,1.0f + 0.6f);
         Quaternion quat  = new Quaternion(quat_x,quat_y,quat_z,quat_w);
         POV.transform.SetPositionAndRotation(trans,quat);
-        New_POV.transform.SetPositionAndRotation(trans,quat);
+        // New_POV.transform.SetPositionAndRotation(trans,quat);
         // New_POV_1.transform.SetPositionAndRotation(trans,quat);
         Vector3 lookat_axis = new Vector3(0,1,0);
         POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
-        New_POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
+        // New_POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
         // New_POV_1.transform.LookAt(Cube_2_base.transform,lookat_axis); 
 
         }
