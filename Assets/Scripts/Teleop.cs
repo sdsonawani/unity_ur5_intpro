@@ -284,6 +284,7 @@ public class Teleop: MonoBehaviour{
                 }
                
                 Vector3 trans = new Vector3(tx, ty, tz);
+                // Vector3 trans = new Vector3(trans_x, trans_y, dtrans_z);
                 // Vector3 trans = new Vector3(dtrans_x, dtrans_y, dtrans_z);
                 // Vector3 trans = new Vector3(opti_trans_x, opti_trans_y, opti_trans_z);
                 // Quaternion quat  = new Quaternion(quat_x,quat_y,quat_z,quat_w);

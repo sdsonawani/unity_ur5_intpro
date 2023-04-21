@@ -226,14 +226,17 @@ public class CamPoseSubscriber: MonoBehaviour{
     void Update(){
 
         if (use_headtrack){
-            Vector3 trans    = new Vector3( htrans_x, htrans_y + 1.7f, 1.5f );
+            // Vector3 trans    = new Vector3( htrans_x, htrans_y + 1.7f, 1.5f );
+            Vector3 trans    = new Vector3(htrans_x, htrans_y + 0.35f,htrans_z + 0.20f);
+
             // Vector3 trans    = new Vector3(trans_x,trans_y,trans_z);
-            Quaternion quat  = new Quaternion(hquat_x,hquat_y,hquat_z,hquat_w);
+            // Quaternion quat  = new Quaternion(hquat_x,hquat_y,hquat_z,hquat_w);
+            Quaternion quat  = new Quaternion(0,0,0,1);
             POV.transform.SetPositionAndRotation(trans,quat);
             // New_POV.transform.SetPositionAndRotation(trans,quat);
             // New_POV_1.transform.SetPositionAndRotation(trans,quat);
             Vector3 lookat_axis = new Vector3(0,1,0);
-            // POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
+            POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
             // New_POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
             // New_POV_1.transform.LookAt(Cube_2_base.transform,lookat_axis); 
         }
