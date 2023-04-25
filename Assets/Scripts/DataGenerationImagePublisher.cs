@@ -31,6 +31,7 @@ public class DataGenerationImagePublisher: MonoBehaviour{
     // public float f = 1.0f;
     // public float fov = 75f;
     // public string render_layer;
+    private int id_counter = 1;
 
     public void Start(){
 
@@ -44,7 +45,7 @@ public class DataGenerationImagePublisher: MonoBehaviour{
 
 
     public Texture2D CaptureImage(Camera cam){
-        cam.backgroundColor = Color.black;
+        // cam.backgroundColor = Color.black;
         cam.targetTexture = renderTexture;
         RenderTexture currentRT = RenderTexture.active;
         RenderTexture.active = renderTexture;
@@ -67,7 +68,16 @@ public class DataGenerationImagePublisher: MonoBehaviour{
         Destroy(image);
     }
 
+     public void save_locally(int id){
+        var image    = CaptureImage(_camera);
+        byte[] bytes = image.EncodeToPNG();
+        File.WriteAllBytes(string.Format("/home/slocal/image_Data/Image_{0}.png",id), bytes);
+        Destroy(image);
+    }
+
     public void Update(){        
             Publish_1();
+            // save_locally(id_counter);
+            // id_counter += 1;
     }
 }
