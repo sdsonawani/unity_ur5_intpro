@@ -18,28 +18,28 @@ TagManager:
   - render_layer_1
   - render_layer_2
   - render_layer_3
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - render_layer_4
+  - render_layer_5
+  - render_layer_6
+  - render_layer_7
+  - render_layer_8
+  - render_layer_9
+  - render_layer_10
+  - render_layer_11
+  - render_layer_12
+  - render_layer_13
+  - render_layer_14
+  - render_layer_15
+  - render_layer_16
+  - render_layer_17
+  - render_layer_18
+  - render_layer_19
+  - render_layer_20
+  - render_layer_21
+  - render_layer_22
+  - render_layer_23
+  - render_layer_24
+  - render_layer_25
   - 
   m_SortingLayers:
   - name: Default

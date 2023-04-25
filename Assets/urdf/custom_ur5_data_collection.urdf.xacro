@@ -1,0 +1,194 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro"
+       name="ur5" >
+
+  <xacro:arg name="transmission_hw_interface" default="hardware_interface/PositionJointInterface"/>
+
+  <!-- common stuff -->
+  <xacro:include filename="$(find ur5_intpro)/urdf/common.gazebo.xacro" />
+
+  <!-- ur5 -->
+  <xacro:include filename="$(find ur5_intpro)/urdf/ur5.urdf.xacro" />
+
+  <!-- arm -->
+  <!-- <xacro:ur5_robot prefix="" joint_limited="false"
+    transmission_hw_interface="$(arg transmission_hw_interface)"
+  /> -->
+  <xacro:ur5_robot prefix="" joint_limited="true"
+    shoulder_pan_lower_limit="${-pi}" shoulder_pan_upper_limit="${pi}"
+    shoulder_lift_lower_limit="${-pi}" shoulder_lift_upper_limit="${-pi/8}"
+    elbow_joint_lower_limit="${-pi}" elbow_joint_upper_limit="${pi}"
+    wrist_1_lower_limit="${-pi}" wrist_1_upper_limit="${pi}"
+    wrist_2_lower_limit="${-pi}" wrist_2_upper_limit="${pi}"
+    wrist_3_lower_limit="${-2*pi}" wrist_3_upper_limit="${2*pi}"
+    transmission_hw_interface="$(arg transmission_hw_interface)"
+  />
+
+  <!-- shoulder_pan_lower_limit:=${-pi/3}    shoulder_pan_upper_limit:=${pi/3}
+    shoulder_lift_lower_limit:=${-pi/2.0}    shoulder_lift_upper_limit:=${-pi/2.0 + 0.01}
+    elbow_joint_lower_limit:=${-pi/3.0}    elbow_joint_upper_limit:=${0} -->
+
+  <link name="world" />
+
+  <joint name="dummy_joint" type="fixed">
+    <parent link="world"/>
+    <child link="dummy_link"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </joint>
+
+  <link name="dummy_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="10000" />
+      <inertia
+        ixx="6666.66"
+        ixy="0"
+        ixz="0"
+        iyy="6666.66"
+        iyz="0"
+        izz="6666.66" />
+    </inertial>
+     <!-- <visual> -->
+      <!-- <geometry> -->
+        <!-- <box size="2.0 2.0 1.0"/> -->
+        <!-- <mesh filename="package://ur5_intpro/meshes/table/table.dae" /> -->
+      <!-- </geometry> -->
+      <!-- <origin rpy="0 0 0" xyz="0 0 0"/> -->
+    <!-- </visual> -->
+    <collision>
+      <geometry>
+        <mesh filename="package://ur5_intpro/meshes/table/table_1.dae" />
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </collision>
+  </link>
+
+  <gazebo reference="dummy_link">
+    <mu1 value="1.0"/>
+    <mu2 value="1.0"/>
+    <kp value="900000000.0"></kp>
+    <kd value="800000000.0"></kd>
+    <selfCollide value="false"/>
+    <static>true</static>
+  </gazebo>
+
+
+  <joint name="world_joint" type="fixed">
+    <parent link="dummy_link" />
+    <child link = "base_link" />
+    <origin xyz="0.0 0.0 0.72" rpy="0.0 0.0 0.0" />
+  </joint>
+
+  <xacro:include filename="$(find robotiq_description)/urdf/robotiq_85_gripper.urdf.xacro" />
+  
+  <!-- Robotiq Coupler -->
+  <!--  + Height added by the coupler: 8mm -->
+  <!--  + Reference frame: at the middle (4mm) -->
+  <link name="robotiq_coupler">
+    <visual>
+      <geometry>
+        <mesh filename="package://robotiq_description/meshes/robotiq_85_coupler.stl" />
+      </geometry>
+      <material name="flat_black"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://robotiq_description/meshes/robotiq_85_coupler.stl" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="2.073e-05   1.45286e-03  -1.1049e-03" rpy="0 0 0" />
+      <mass value="0.168" />
+      <inertia ixx="6.69695624e-05" ixy="5.21511788e-09" ixz="-2.74383009e-08" 
+               iyy="7.85088161e-05" iyz="5.41105193e-07" izz="1.41819717e-04"/>
+    </inertial>
+  </link>
+
+  <joint name="robotiq_coupler_joint" type="fixed">
+    <origin xyz="0 0 0.004" rpy="0 0 ${-pi/2.0}" />
+    <parent link="tool0"/>
+    <child link="robotiq_coupler"/>
+  </joint>
+  <gazebo reference="robotiq_coupler">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+  
+  <!-- Equivalent to the OpenRAVE manipulator denso_robotiq_85_gripper -->
+  <!-- <link name="denso_robotiq_85_gripper" /> -->
+  <!-- <joint name="manipulator_dummy_joint" type="fixed"> -->
+  <!--   <origin xyz="0 0 0.1441" rpy="0 0 0" /> -->
+  <!--   <parent link="robotiq_coupler"/> -->
+  <!--   <child link="denso_robotiq_85_gripper"/> -->
+  <!-- </joint> -->
+  
+  <!-- Attach the robotiq 85 gripper -->
+  <xacro:robotiq_85_gripper prefix="" parent="robotiq_coupler" >
+    <origin xyz="0 0 0.004" rpy="0 ${-pi/2} ${pi}"/>
+  </xacro:robotiq_85_gripper> 
+  
+  <!-- Gazebo FT sensor plugin -->
+  <!-- <gazebo reference="wrist_3_joint">
+    <provideFeedback>true</provideFeedback>
+  </gazebo>
+  <gazebo>
+    <plugin name="ft_sensor_plugin" filename="libgazebo_ros_ft_sensor.so">
+      <updateRate>250.0</updateRate>
+      <topicName>ft_sensor/raw</topicName>
+      <gaussianNoise>0.0</gaussianNoise>
+      <jointName>wrist_3_joint</jointName>
+    </plugin>
+  </gazebo>
+   -->
+  <!-- Gazebo grasping plugin -->
+  <!-- <gazebo>
+    <gripper name="gazebo_gripper">
+      <grasp_check>
+        <attach_steps>2</attach_steps>   
+        <detach_steps>2</detach_steps>    
+        <min_contact_count>3</min_contact_count>
+      </grasp_check>
+      <gripper_link>robotiq_85_left_finger_tip_link</gripper_link>
+      <gripper_link>robotiq_85_right_finger_tip_link</gripper_link>
+      <palm_link>robotiq_85_base_link</palm_link>
+    </gripper>
+  </gazebo> -->
+
+<!-- fake end effector -->
+<link name="fake_end_effector_link">
+    <visual>
+    <geometry>
+      <box size="0.06 0.06 0.06"/>
+      <!-- <mesh filename="package://ur5_intpro/meshes/visualize.stl" /> -->
+      <!-- <mesh filename="package://ur5_intpro/meshes/visualize.dae" /> -->
+      <!-- <box size="0.01 0.01 0.01"/> -->
+    </geometry>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <material name="red"/>
+  </visual>
+    <collision>
+    <geometry>
+      <box size="0 0 0"/>
+    </geometry>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </collision>
+  </link>
+  <joint name="fake_end_effector_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="0.145 0.0 0.0"/>
+    <!-- <origin rpy="0 0 0" xyz="0 0.1 0"/> -->
+    <!-- <parent link="J6"/> -->
+    <parent link="robotiq_85_base_link"/>
+    <child link="fake_end_effector_link"/>
+  </joint>
+
+
+<material name="orange">
+    <color rgba="${255/255} ${108/255} ${10/255} 1.0"/>
+</material>
+    <gazebo reference="fake_end_effector_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+    <material>Gazebo/Orange</material>
+  </gazebo>
+</robot>
