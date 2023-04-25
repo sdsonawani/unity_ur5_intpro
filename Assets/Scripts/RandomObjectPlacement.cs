@@ -39,11 +39,13 @@ public class RandomObjectPlacement: MonoBehaviour{
     public List<int> obj_ids;
 
 
-    private Vector3 init_pose_ref = new Vector3(-0.70f, 1.95f, 0.4f); 
-    private Vector3 init_pose1 = new Vector3(-0.70f, 1.95f, 0.4f); 
+    private Vector3 init_pose_ref = new Vector3(-0.70f, 0.85f, 0.4f); 
+    private Vector3 init_pose1 = new Vector3(-0.70f, 0.85f, 0.4f); 
     private Vector3 local_scale = new Vector3(0.05f,0.05f,0.05f); 
     private string resource_dir = string.Format("/home/slocal/Documents/ur5_intpro/Assets/Resources/");
-    
+    UrdfJointRevolute[] m_jab;
+    public static readonly string[] LinkNames =
+        { "world/dummy_link/base_link/shoulder_link", "/upper_arm_link", "/forearm_link", "/wrist_1_link",  "/wrist_2_link",  "/wrist_3_link" };
     private string ee_link1 = "world/dummy_link/base_link/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link";
     private string ee_link2 = "/tool0/robotiq_coupler/robotiq_85_base_link";
     // private string ee_link2 = "/tool0/robotiq_coupler/robotiq_85_base_link/fake_end_effector_link/Visuals/unnamed/Cube";
@@ -124,15 +126,23 @@ public class RandomObjectPlacement: MonoBehaviour{
         HeaderMsg msg = new HeaderMsg();
         msg.frame_id = topic_name;
         ImageMsg imgmsg  = image.ToImageMsg(msg);
-        custom_msg.Image = imgmsg;
         
         int total_objects = objects.Count;
-        float[] cords = new float[2* (total_objects)];
+        float[] x_image = new float[total_objects];
+        float[] y_image = new float[total_objects];
+        float[] x_world = new float[total_objects];
+        float[] y_world = new float[total_objects];
+        float[] z_world = new float[total_objects];
         string[] object_names_msg = new string[total_objects];
+
         for (int i = 0; i < objects.Count; i++){
             Vector3 screenPos = _camera.WorldToScreenPoint(objects[i].transform.position);
-            cords[i] =   (int)screenPos.x;
-            cords[total_objects+i] = (int)screenPos.y;
+            x_world[i] = objects[i].transform.position.x;
+            y_world[i] = objects[i].transform.position.y;
+            z_world[i] = objects[i].transform.position.z;
+            x_image[i] = screenPos.x;
+            y_image[i] = screenPos.y;
+
             if (i == objects.Count-1 ){
                 object_names_msg[i] = "ee_link";
             }
@@ -145,8 +155,29 @@ public class RandomObjectPlacement: MonoBehaviour{
         // Debug.Log(string.Format("ee: x = [{0}] y = [{1}]",screenPos_ee.x,screenPos_ee.y));
         // Debug.Log(ur5_ee.transform.position);
 
-        custom_msg.xy = cords;
+        
+
+        float[] joints= new float[7];
+        for(var i = 0; i<6; i++ ){
+
+                if (i==1 || i == 3){
+                   joints[i] =  (float) (m_jab[i].GetPosition() - (Math.PI/2.0));
+                }
+                else{
+                    joints[i] = (float) (m_jab[i].GetPosition());
+                }
+            }
+        joints[^1] = 0.0f;
+        
+        custom_msg.Image = imgmsg;
+        custom_msg.joint_angles = joints;
+        custom_msg.x_image = x_image;
+        custom_msg.y_image = y_image;
+        custom_msg.x_world = x_world;
+        custom_msg.y_world = y_world;
+        custom_msg.z_world = z_world;
         custom_msg.obj_names = object_names_msg;
+
         ros.Publish(topic_name, custom_msg);
 
         Destroy(image);
@@ -159,6 +190,13 @@ public class RandomObjectPlacement: MonoBehaviour{
         ur5 = GameObject.Find("ur5");
         ur5_ee = GameObject.Find("Cube_ee");
         // ur5_ee = ur5.transform.Find(ee_link1+ee_link2).GetComponent<GameObject>();
+        m_jab = new UrdfJointRevolute[6];
+        var link_names = string.Empty;
+        for (var i = 0; i < 6; i++){
+            link_names += LinkNames[i];
+            m_jab[i] = ur5.transform.Find(link_names).GetComponent<UrdfJointRevolute>();
+        }
+
         _camera = GameObject.Find("Front_Camera").GetComponent<Camera>();
         ros =  ROSConnection.GetOrCreateInstance();
         ros.RegisterPublisher<RGBXYSEGMsg>(CameraTopic1);
@@ -172,28 +210,37 @@ public class RandomObjectPlacement: MonoBehaviour{
         object_names = get_object_names(resource_dir);
         Debug.Log(string.Format("total objects found in resources: {0}",object_names.Count));
 
-        for (var i = 0; i < x_grid; i++){
-            for (var j = 0; j < z_grid; j++){
-                // tagsProp.InsertArrayElementAtIndex(0);
-                // SerializedProperty n = tagsProp.GetArrayElementAtIndex(0);
-                // n.stringValue = string.Format("{0}",tag_counter);
-                // tagManager.ApplyModifiedProperties();
-                // Debug.Log(string.Format("{0}", tag_counter));
-                var obj_id = Random.Range(i+j+1,object_names.Count);
-                var object_name = object_names[obj_id];
-                obj_ids.Add(obj_id);
-                var game_object = load_object(object_name, layer_counter);
-
-                game_object.transform.SetPositionAndRotation(init_pose1, new Quaternion(0,0,0,1));
-                objects.Add(game_object);
-
-                init_pose1[2] += 0.15f;
-                layer_counter += 1;
-            }
-            init_pose1[2] = init_pose_ref[2];
+        for (var i = 0; i < 4; i++){
+            var obj_id = Random.Range(i,object_names.Count);
+            var object_name = object_names[obj_id];
+            var game_object = load_object(object_name, layer_counter);
+            game_object.transform.SetPositionAndRotation(init_pose1, new Quaternion(0,0,0,1));
+            objects.Add(game_object);
+            obj_ids.Add(obj_id);
             init_pose1[0] += 0.15f;
         }
-    objects.Add(ur5_ee);
+        // for (var i = 0; i < x_grid; i++){
+        //     for (var j = 0; j < z_grid; j++){
+        //         // tagsProp.InsertArrayElementAtIndex(0);
+        //         // SerializedProperty n = tagsProp.GetArrayElementAtIndex(0);
+        //         // n.stringValue = string.Format("{0}",tag_counter);
+        //         // tagManager.ApplyModifiedProperties();
+        //         // Debug.Log(string.Format("{0}", tag_counter));
+        //         var obj_id = Random.Range(i+j+1,object_names.Count);
+        //         var object_name = object_names[obj_id];
+        //         obj_ids.Add(obj_id);
+        //         var game_object = load_object(object_name, layer_counter);
+
+        //         game_object.transform.SetPositionAndRotation(init_pose1, new Quaternion(0,0,0,1));
+        //         objects.Add(game_object);
+
+        //         init_pose1[2] += 0.15f;
+        //         layer_counter += 1;
+        //     }
+        //     init_pose1[2] = init_pose_ref[2];
+        //     init_pose1[0] += 0.15f;
+        // }
+        objects.Add(ur5_ee);
 
     }
 
