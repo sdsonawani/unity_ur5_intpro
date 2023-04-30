@@ -26,8 +26,8 @@ public class DataGenerationImagePublisher: MonoBehaviour{
     private RenderTexture renderTexture;
     private RenderTexture renderTexturePlane;
     // public float f = 35.0f;
-    private int Pwdith = 1920;
-    private int Pheight = 1080;
+    private int Pwdith = 1280;
+    private int Pheight = 720;
     // public float f = 1.0f;
     // public float fov = 75f;
     // public string render_layer;
@@ -35,7 +35,8 @@ public class DataGenerationImagePublisher: MonoBehaviour{
 
     public void Start(){
 
-        _camera = GameObject.Find("Front_Camera").GetComponent<Camera>();
+        _camera = GameObject.Find("Front_Camera_1").GetComponent<Camera>();
+        // _camera = GameObject.Find("Front_Camera").GetComponent<Camera>();
         ros =  ROSConnection.GetOrCreateInstance();
         ros.RegisterPublisher<ImageMsg>(CameraTopic1);
         renderTexture = new RenderTexture(Pwdith, Pheight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8_UNorm);

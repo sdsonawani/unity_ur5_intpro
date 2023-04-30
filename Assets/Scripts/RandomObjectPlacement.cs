@@ -19,7 +19,7 @@ using Dummiesman;
 public class RandomObjectPlacement: MonoBehaviour{
 
 
-    public Camera _camera; 
+    private Camera _camera; 
     ROSConnection ros;
     private ImageMsg imgmsg = new ImageMsg();
     private string CameraTopic1 = "custom_rgb_objs_xy";
@@ -39,43 +39,52 @@ public class RandomObjectPlacement: MonoBehaviour{
     public List<int> obj_ids;
 
 
-    private Vector3 init_pose_ref = new Vector3(-0.70f, 0.85f, 0.4f); 
-    private Vector3 init_pose1 = new Vector3(-0.70f, 0.85f, 0.4f); 
+    private Vector3 init_pose_ref = new Vector3(-0.40f, 0.80f, 0.2f); 
+    private Vector3 init_pose1    = new Vector3(-0.40f, 0.80f, 0.2f); 
     private Vector3 local_scale = new Vector3(0.05f,0.05f,0.05f); 
     private string resource_dir = string.Format("/home/slocal/Documents/ur5_intpro/Assets/Resources/");
     UrdfJointRevolute[] m_jab;
-    public static readonly string[] LinkNames =
+    private static readonly string[] LinkNames =
         { "world/dummy_link/base_link/shoulder_link", "/upper_arm_link", "/forearm_link", "/wrist_1_link",  "/wrist_2_link",  "/wrist_3_link" };
     private string ee_link1 = "world/dummy_link/base_link/shoulder_link/upper_arm_link/forearm_link/wrist_1_link/wrist_2_link/wrist_3_link";
     private string ee_link2 = "/tool0/robotiq_coupler/robotiq_85_base_link";
     // private string ee_link2 = "/tool0/robotiq_coupler/robotiq_85_base_link/fake_end_effector_link/Visuals/unnamed/Cube";
     private GameObject ur5;
     private GameObject ur5_ee;
+    private GameObject baseUr5;
     private SerializedObject tagManager;
     private SerializedProperty tagsProp;
 
+    private static readonly string[] data_object_names = {"apple","avocado", "donut", "green_pear", "hamburger", "lemon", "mug", "orange", 
+                                                          "sourdough", "strawberry"};
+    private int train_id = 4;
     private int _counter = 0;
  
     GameObject load_object(string object_name, int layer_id){
         GameObject gameobject = new OBJLoader().Load(string.Format("Assets/Resources/{0}.obj",object_name)); 
+        gameobject.layer  = LayerMask.NameToLayer(string.Format("render_layer_{0}",1));
         
         GameObject child_object = Resources.Load<GameObject>(object_name).transform.GetChild(0).gameObject;
+
         child_object.transform.localScale = local_scale;
         gameobject.transform.localScale = local_scale;
 
         Rigidbody body = gameobject.AddComponent<Rigidbody>();
         body.angularDrag = 0.0f;
+        body.mass = 0.05f;
         // body.constraints = RigidbodyConstraints.FreezeRotationY;
         // body.constraints = RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionZ |  RigidbodyConstraints.FreezePositionX;
         // body.constraints = RigidbodyConstraints.FreezePositionZ |  RigidbodyConstraints.FreezePositionX;
         // body.constraints = RigidbodyConstraints.FreezePositionZ |  RigidbodyConstraints.FreezePositionX;
         body.useGravity = false;
 
-        MeshCollider mesh_ = gameobject.AddComponent<MeshCollider>();
-        var mesh = child_object.GetComponent<MeshFilter>().sharedMesh;
-        mesh_.sharedMesh = mesh;
-        mesh_.convex = true;
+        // MeshCollider mesh_ = gameobject.AddComponent<MeshCollider>();
+        // var mesh = child_object.GetComponent<MeshFilter>().sharedMesh;
+        // mesh_.sharedMesh = mesh;
+        // mesh_.convex = true;
+        gameobject.AddComponent<BoxCollider>();
         gameobject.transform.GetChild(0).gameObject.transform.localRotation = Quaternion.Euler(180, 180, 0);
+        gameobject.transform.GetChild(0).gameObject.layer  = LayerMask.NameToLayer(string.Format("render_layer_{0}",1));
 
         // change the material properties
         var Renderer =  gameobject.transform.GetChild(0).gameObject.GetComponent<Renderer>();
@@ -99,6 +108,7 @@ public class RandomObjectPlacement: MonoBehaviour{
             var file_format = split_string[^1];
             if (file_format == "obj"){
                 var object_name = files[i].Split('/')[^1].Split('.')[0];
+                // Debug.Log(string.Format("object name: {0}", object_name.Split("_")[0]));
                 local_list.Add(object_name);
             }
         }
@@ -137,9 +147,14 @@ public class RandomObjectPlacement: MonoBehaviour{
 
         for (int i = 0; i < objects.Count; i++){
             Vector3 screenPos = _camera.WorldToScreenPoint(objects[i].transform.position);
-            x_world[i] = objects[i].transform.position.x;
-            y_world[i] = objects[i].transform.position.y;
-            z_world[i] = objects[i].transform.position.z;
+            Vector3 relativePosition = baseUr5.transform.InverseTransformPoint(objects[i].transform.position);
+            // Debug.Log(string.Format("relative position: {0}",relativePosition));
+            // x_world[i] = objects[i].transform.position.x;
+            // y_world[i] = objects[i].transform.position.y;
+            // z_world[i] = objects[i].transform.position.z;
+            x_world[i] = relativePosition.x;
+            y_world[i] = relativePosition.y;
+            z_world[i] = relativePosition.z;
             x_image[i] = screenPos.x;
             y_image[i] = screenPos.y;
 
@@ -189,6 +204,7 @@ public class RandomObjectPlacement: MonoBehaviour{
         
         ur5 = GameObject.Find("ur5");
         ur5_ee = GameObject.Find("Cube_ee");
+        baseUr5 = GameObject.Find("base");
         // ur5_ee = ur5.transform.Find(ee_link1+ee_link2).GetComponent<GameObject>();
         m_jab = new UrdfJointRevolute[6];
         var link_names = string.Empty;
@@ -197,7 +213,7 @@ public class RandomObjectPlacement: MonoBehaviour{
             m_jab[i] = ur5.transform.Find(link_names).GetComponent<UrdfJointRevolute>();
         }
 
-        _camera = GameObject.Find("Front_Camera").GetComponent<Camera>();
+        _camera = GameObject.Find("Front_Camera_1").GetComponent<Camera>();
         ros =  ROSConnection.GetOrCreateInstance();
         ros.RegisterPublisher<RGBXYSEGMsg>(CameraTopic1);
         renderTexture = new RenderTexture(Pwdith, Pheight, 24, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8_UNorm);
@@ -210,36 +226,36 @@ public class RandomObjectPlacement: MonoBehaviour{
         object_names = get_object_names(resource_dir);
         Debug.Log(string.Format("total objects found in resources: {0}",object_names.Count));
 
-        for (var i = 0; i < 4; i++){
-            var obj_id = Random.Range(i,object_names.Count);
-            var object_name = object_names[obj_id];
-            var game_object = load_object(object_name, layer_counter);
-            game_object.transform.SetPositionAndRotation(init_pose1, new Quaternion(0,0,0,1));
-            objects.Add(game_object);
-            obj_ids.Add(obj_id);
-            init_pose1[0] += 0.15f;
-        }
-        // for (var i = 0; i < x_grid; i++){
-        //     for (var j = 0; j < z_grid; j++){
-        //         // tagsProp.InsertArrayElementAtIndex(0);
-        //         // SerializedProperty n = tagsProp.GetArrayElementAtIndex(0);
-        //         // n.stringValue = string.Format("{0}",tag_counter);
-        //         // tagManager.ApplyModifiedProperties();
-        //         // Debug.Log(string.Format("{0}", tag_counter));
-        //         var obj_id = Random.Range(i+j+1,object_names.Count);
-        //         var object_name = object_names[obj_id];
-        //         obj_ids.Add(obj_id);
-        //         var game_object = load_object(object_name, layer_counter);
-
-        //         game_object.transform.SetPositionAndRotation(init_pose1, new Quaternion(0,0,0,1));
-        //         objects.Add(game_object);
-
-        //         init_pose1[2] += 0.15f;
-        //         layer_counter += 1;
-        //     }
-        //     init_pose1[2] = init_pose_ref[2];
+        // for (var i = 0; i < 15; i++){
+        //     var obj_id = Random.Range(i,object_names.Count);
+        //     var object_name = object_names[obj_id];
+        //     var game_object = load_object(object_name, layer_counter);
+        //     game_object.transform.SetPositionAndRotation(init_pose1, new Quaternion(0,0,0,1));
+        //     objects.Add(game_object);
+        //     obj_ids.Add(obj_id);
         //     init_pose1[0] += 0.15f;
         // }
+        for (var i = 0; i < x_grid; i++){
+            for (var j = 0; j < z_grid; j++){
+                // tagsProp.InsertArrayElementAtIndex(0);
+                // SerializedProperty n = tagsProp.GetArrayElementAtIndex(0);
+                // n.stringValue = string.Format("{0}",tag_counter);
+                // tagManager.ApplyModifiedProperties();
+                // Debug.Log(string.Format("{0}", tag_counter));
+                var obj_id = Random.Range(i+j+1,object_names.Count);
+                var object_name = object_names[obj_id];
+                obj_ids.Add(obj_id);
+                var game_object = load_object(object_name, layer_counter);
+
+                game_object.transform.SetPositionAndRotation(init_pose1, new Quaternion(0,0,0,1));
+                objects.Add(game_object);
+
+                init_pose1[2] += 0.15f;
+                layer_counter += 1;
+            }
+            init_pose1[2] = init_pose_ref[2];
+            init_pose1[0] += 0.15f;
+        }
         objects.Add(ur5_ee);
 
     }
@@ -253,12 +269,14 @@ public class RandomObjectPlacement: MonoBehaviour{
             }
         }
 
-        if (_counter == 150){
+        if (_counter == 110){
             Debug.Log("Applying constraints.......");
             for (var i = 0; i < objects.Count-1; i++){
             Rigidbody body = objects[i].GetComponent<Rigidbody>();
-            body.constraints = RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionZ |  RigidbodyConstraints.FreezePositionX;
-            body.velocity = Vector3.zero;
+            // body.constraints = RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionZ |  RigidbodyConstraints.FreezePositionX;
+            // body.velocity = Vector3.zero;
+            // objects[i].layer = LayerMask.NameToLayer(string.Format("render_layer_{0}",1));
+
 
             }
         }

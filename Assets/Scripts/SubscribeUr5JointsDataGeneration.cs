@@ -93,7 +93,7 @@ public class SubscribeUr5JointsDataGeneration : MonoBehaviour
         m_ur5ArticulationBody       = new ArticulationBody[num_joints];
         for (var i = 0; i < num_joints; i++){
             link_names += LinkNames[i];
-            Debug.Log(link_names);
+            // Debug.Log(link_names);
 
             m_ur5ArticulationBody[i]       = ur5.transform.Find(link_names).GetComponent<ArticulationBody>();
             // Debug.Log(string.Format("Articulate body: {0} and joint position: {1}",m_ur5ArticulationBody[i],m_ur5ArticulationBody[i].jointPosition[0]));
