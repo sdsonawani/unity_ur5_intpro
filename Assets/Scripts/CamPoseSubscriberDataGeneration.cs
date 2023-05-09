@@ -15,6 +15,7 @@ using System.Collections.Generic;
 
 public class CamPoseSubscriberDataGeneration: MonoBehaviour{
 
+    public bool publish_topic = true;
     public bool use_headtrack = false;
     private GameObject Cube_1;
     private GameObject Cube_2;
@@ -243,6 +244,8 @@ public class CamPoseSubscriberDataGeneration: MonoBehaviour{
 
         }
         
-        publish_imageNsrcmat();
+        if (publish_topic){
+            publish_imageNsrcmat();
+        }
     }
 }
