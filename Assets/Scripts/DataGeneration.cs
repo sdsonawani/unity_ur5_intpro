@@ -43,8 +43,16 @@ public class DataGeneration: MonoBehaviour{
     // private Camera _camera; 
     ROSConnection ros;
     private ImageMsg imgmsg = new ImageMsg();
-    private string RosTopic = "custom_rgb_xy_src_mat";
+    // private string RosTopic = "custom_rgb_xy_src_mat";
     private string RosTopic1 = "unity_data_stream";
+    private string RosTopic3 = "unity_data_stream_v3";
+    private string RosTopicInitiate = "initiate_exp";
+    private string RosTopic = "image_and_src_mat";
+    public string PosetopicName = "pov_pose";
+
+    public float trans_x,trans_y,trans_z;
+    public float quat_w,quat_x,quat_y,quat_z;
+    private bool initiate_ros;
     private float timeElapsed;
     private RenderTexture renderTexture;
     private RenderTexture renderTexturePlane;
@@ -75,7 +83,7 @@ public class DataGeneration: MonoBehaviour{
                                                           "sourdough", "strawberry"};    
     private int _counter = 0;
     private int split_factor = 8; // out of 10 objects, take first 4 objects for data generation
-    private int max_objects = 3; // maximum number of objects on the table
+    private int max_objects = 1; // maximum number of objects on the table
 
     public float x_max = 0.5f;
     public float x_min = -0.5f;
@@ -457,6 +465,78 @@ public class DataGeneration: MonoBehaviour{
         return ros_msg;
     }
 
+    ImageSrcMatMsg get_imgeSrcMat(){
+        var image = CaptureImageImgSrcMat(POV);
+        HeaderMsg header_msg = new HeaderMsg();
+        header_msg.frame_id = "pov";
+        ImageMsg imgmsg  = image.ToImageMsg(header_msg);
+
+        double[] xs = new double[4];
+        double[] ys = new double[4];
+        for (int i = 0; i < 4; i++){
+            Vector3 screenPos = POV.WorldToScreenPoint(ref_objects[i].transform.position);
+            xs[i] = (double)screenPos.x;
+            ys[i] = (double)screenPos.y;
+        }
+        var msg = new ImageSrcMatMsg();
+        msg.Image = imgmsg;
+        msg.x = xs;
+        msg.y = ys;
+        Destroy(image);
+
+        return msg;
+    }
+
+
+    V3DataMsg get_v3DataMsg(){
+        // var image = CaptureImageImgSrcMat(POV);
+
+        int total_objects = current_gameobjects.Count + 1;
+        float[] x_world = new float[total_objects];
+        float[] y_world = new float[total_objects];
+        float[] z_world = new float[total_objects];
+        string[] object_names_msg = new string[total_objects];
+        for (int i = 0; i < total_objects; i++){
+            if (i == total_objects-1 ){
+                Vector3 screenPos = POV.WorldToScreenPoint(ur5_ee.transform.position);
+                Vector3 relativePosition = baseUr5.transform.InverseTransformPoint(ur5_ee.transform.position);
+                x_world[i] = relativePosition.x;
+                y_world[i] = relativePosition.y;
+                z_world[i] = relativePosition.z;
+                object_names_msg[i] = "ee_link";
+            }
+            else{
+                Vector3 screenPos = POV.WorldToScreenPoint(current_gameobjects[i].transform.position);
+                Vector3 relativePosition = baseUr5.transform.InverseTransformPoint(current_gameobjects[i].transform.position);
+                x_world[i] = relativePosition.x;
+                y_world[i] = relativePosition.y;
+                z_world[i] = relativePosition.z;
+                object_names_msg[i] = current_object_names_local[i];
+            }
+        }
+        float[] joints= new float[7];
+        for(var i = 0; i<6; i++ ){
+
+                if (i==1 || i == 3){
+                   joints[i] =  (float) (m_jab[i].GetPosition() - (Math.PI/2.0));
+                }
+                else{
+                    joints[i] = (float) (m_jab[i].GetPosition());
+                }
+            }
+        joints[^1] = 0.0f;
+        var ros_msg_v3 = new V3DataMsg();
+        ros_msg_v3.joint_angles = joints;
+        ros_msg_v3.x_world  = x_world;
+        ros_msg_v3.y_world  = y_world;
+        ros_msg_v3.z_world  = z_world;
+        ros_msg_v3.object_names = object_names_msg;
+        // Destroy(image);
+
+        return ros_msg_v3;
+    }
+
+
      void ApplyPRAndCollision(GameObject obj, Vector3 trans, Quaternion quat, bool Collide = false){
         obj.transform.SetPositionAndRotation(trans,quat);
         Collider obj_collider = obj.GetComponent<Collider>();
@@ -469,6 +549,19 @@ public class DataGeneration: MonoBehaviour{
 
     }
 
+    void IntiateCallback(BoolMsg msg){
+        initiate_ros = msg.data; 
+    }
+
+    void PoseCallback(CamPoseMsg msg){
+        trans_x = (float)msg.x;
+        trans_y = (float)msg.y;
+        trans_z = (float)msg.z;
+        quat_x  = (float)msg.x_;
+        quat_y  = (float)msg.y_;
+        quat_z  = (float)msg.z_;
+        quat_w  = (float)msg.w_;
+    }
     void Start(){
 
         Cube_2_base   = GameObject.Find("Cube_5");
@@ -482,10 +575,10 @@ public class DataGeneration: MonoBehaviour{
         Quaternion cube2_base_quat = Quaternion.Euler(0, 0, 0);
         ApplyPRAndCollision(Cube_2_base, cube2_base_trans, cube2_base_quat);   
 
-        Vector3 cube2_base_c1_trans = new Vector3(- 0.74f, table_y, -0.04f);
-        Vector3 cube2_base_c2_trans = new Vector3(  0.76f, table_y, -0.04f);
-        Vector3 cube2_base_c3_trans = new Vector3(  0.76f, table_y, 0.74f);    
-        Vector3 cube2_base_c4_trans = new Vector3(- 0.74f, table_y, 0.74f);
+        Vector3 cube2_base_c1_trans = new Vector3(- 0.74f, table_y, 0.0f);
+        Vector3 cube2_base_c2_trans = new Vector3(  0.76f, table_y, 0.0f);
+        Vector3 cube2_base_c3_trans = new Vector3(  0.76f, table_y, 0.78f);    
+        Vector3 cube2_base_c4_trans = new Vector3(- 0.74f, table_y, 0.78f);
         ApplyPRAndCollision(Cube_2_basec1, cube2_base_c1_trans, Quaternion.Euler(0,0,0));
         ApplyPRAndCollision(Cube_2_basec2, cube2_base_c2_trans, Quaternion.Euler(0,0,0));
         ApplyPRAndCollision(Cube_2_basec3, cube2_base_c3_trans, Quaternion.Euler(0,0,0));
@@ -510,8 +603,15 @@ public class DataGeneration: MonoBehaviour{
         // initiate camera variables
         // _camera = GameObject.Find("Front_Camera_1").GetComponent<Camera>();
         ros =  ROSConnection.GetOrCreateInstance();
-        ros.RegisterPublisher<RGBXYImageSrcMatMsg>(RosTopic);
+        // ros.RegisterPublisher<RGBXYImageSrcMatMsg>(RosTopic);
+        ros.RegisterPublisher<ImageSrcMatMsg>(RosTopic);
         ros.RegisterPublisher<DataStreamMsg>(RosTopic1);
+        ros.RegisterPublisher<V3DataMsg>(RosTopic3);
+        ros.Subscribe<BoolMsg>(RosTopicInitiate, IntiateCallback);
+        ros.Subscribe<CamPoseMsg>(PosetopicName, PoseCallback);
+
+
+
         // Pwdith  = _camera.pixelWidth;
         // Pheight = _camera.pixelHeight;
 
@@ -529,13 +629,15 @@ public class DataGeneration: MonoBehaviour{
         time_elapsed += Time.deltaTime;
     
         if (time_elapsed > (float) (1/freq)){
-            if (initiate){
+            // Debug.Log(initiate_ros);
+            if (initiate_ros && initiate){
                 Tuple<List<GameObject>, List<string>> current_data = spawn_objects();
                 current_gameobjects = current_data.Item1;
                 current_object_names_local = current_data.Item2;
 
-                var ros_msg = get_DataStreamMsg();
-                ros.Publish(RosTopic1,ros_msg);
+                // var ros_msg = get_DataStreamMsg();
+                // ros.Publish(RosTopic1,ros_msg);
+
                 // ImageSrcMatMsg msg1 = get_imageNsrcmat();
                 // RGBXYSEGMsg msg2    = get_CustomMsg();
                 // RGBXYImageSrcMatMsg msg = new RGBXYImageSrcMatMsg();
@@ -545,8 +647,10 @@ public class DataGeneration: MonoBehaviour{
                 
                 initiate = false;
             }
-            else{
-                // Debug.Log("destroying objects");
+            
+            if(!initiate_ros){
+            // else{
+                Debug.Log("destroying objects");
                 for (var i  = 0; i < current_gameobjects.Count; i ++){
                     Destroy(current_gameobjects[i]);
                     }
@@ -555,7 +659,15 @@ public class DataGeneration: MonoBehaviour{
                 initiate = true;
                 data_counter += 1;
             }
+            // ros.Publish(RosTopic3,get_v3DataMsg());
             time_elapsed = 0;
+            ros.Publish(RosTopic3,get_v3DataMsg());
+            ros.Publish(RosTopic,get_imgeSrcMat());
+            Vector3 trans    = new Vector3(trans_x, trans_y + 0.72f, trans_z);
+            Quaternion quat  = new Quaternion(quat_x,quat_y,quat_z,quat_w);
+            POV.transform.SetPositionAndRotation(trans,quat);
+            Vector3 lookat_axis = new Vector3(0,1,0);
+            POV.transform.LookAt(Cube_2_base.transform,lookat_axis); 
 
         }
     }

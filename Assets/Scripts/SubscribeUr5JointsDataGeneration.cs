@@ -16,6 +16,10 @@ using System.Collections;
 
 public class SubscribeUr5JointsDataGeneration : MonoBehaviour
 {
+
+    public bool use_ros_initiazer = true;
+    private bool initiate_ros;
+    private string RosTopicInitiate = "initiate_exp";
     public GameObject ur5;
     public float publisheFreq = 30f;
     public float deltaTime = 0.1f;
@@ -77,6 +81,9 @@ public class SubscribeUr5JointsDataGeneration : MonoBehaviour
     // public float gripper_goal = 90f;
     public float GripperGoal;
 
+    void IntiateCallback(BoolMsg msg){
+        initiate_ros = msg.data; 
+    }
 
     void Start()
     {   
@@ -85,8 +92,9 @@ public class SubscribeUr5JointsDataGeneration : MonoBehaviour
         ur5 = GameObject.Find("ur5");
         // ros subscriber 
         // ROSConnection.GetOrCreateInstance().Subscribe<Ur5JointsMsg>("real_ur5/joints", jointCallback);
-        ROSConnection.GetOrCreateInstance().Subscribe<Ur5JointsMsg>("/ur5_goal/joints", jointCallback);
+        ROSConnection.GetOrCreateInstance().Subscribe<Ur5JointsMsg>("/unity_ur5_goal/joints", jointCallback);
         ROSConnection.GetOrCreateInstance().Subscribe<Float64Msg>("/robotiq/joint", robotiqCallback);
+        ROSConnection.GetOrCreateInstance().Subscribe<BoolMsg>(RosTopicInitiate, IntiateCallback);
         
         // load articulate body with non static joints
         var link_names              = string.Empty;
@@ -288,14 +296,30 @@ public class SubscribeUr5JointsDataGeneration : MonoBehaviour
     
     void Update(){
         
-        timeElapsed1 += Time.deltaTime;
-        publishMessageTime = (1/publisheFreq);
-        if (timeElapsed1 > publishMessageTime)
-        {   
+        if(use_ros_initiazer){
+            if (initiate_ros){
+                applyControlUR5(m_ur5ArticulationBody);
+                applyControlRobotiq(m_robotiqGripperL, "left");
+                applyControlRobotiq(m_robotiqGripperR, "right");
+            }
+        }
+        else{
             applyControlUR5(m_ur5ArticulationBody);
             applyControlRobotiq(m_robotiqGripperL, "left");
             applyControlRobotiq(m_robotiqGripperR, "right");
-            timeElapsed1 = 0;
         }
+        // applyControlUR5(m_ur5ArticulationBody);
+        // applyControlRobotiq(m_robotiqGripperL, "left");
+        // applyControlRobotiq(m_robotiqGripperR, "right");
+
+        // timeElapsed1 += Time.deltaTime;
+        // publishMessageTime = (1/publisheFreq);
+        // if (timeElapsed1 > publishMessageTime)
+        // {   
+        //     applyControlUR5(m_ur5ArticulationBody);
+        //     applyControlRobotiq(m_robotiqGripperL, "left");
+        //     applyControlRobotiq(m_robotiqGripperR, "right");
+        //     timeElapsed1 = 0;
+        // }
     }
 }

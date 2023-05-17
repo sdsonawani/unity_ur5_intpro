@@ -62,8 +62,6 @@ public class PublishUr5JointsDataGeneration : MonoBehaviour
                 // Debug.Log(string.Format("{0}",j_[i]));
             }
             Ur5JointsMsg joints = new Ur5JointsMsg(j_);
-
-
             ros.Publish(topicName, joints);
             timeElapsed = 0;
         }
